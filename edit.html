@@ -1,6 +1,14 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="dark">
 <head>
+<script>
+(function () {
+  try {
+    var saved = localStorage.getItem("bxz-theme");
+    if (saved === "light" || saved === "dark") document.documentElement.setAttribute("data-theme", saved);
+  } catch (e) { /* file:// 下可能被禁 */ }
+})();
+</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>BXZERO — 编辑台</title>
@@ -296,6 +304,19 @@
     .grid2 { grid-template-columns: 1fr; }
     .settings-grid { grid-template-columns: 1fr; }
   }
+
+  /* 白天模式：把写死的深色底换成浅色 */
+  html[data-theme="light"] .pane { background: #fff; border-color: #d8dee6; }
+  html[data-theme="light"] .pane input,
+  html[data-theme="light"] .pane textarea { background: #f6f8fa; border-color: #d8dee6; color: #10161d; }
+  html[data-theme="light"] .entry:hover { background: rgba(53, 216, 255, .08); }
+  html[data-theme="light"] .row-del { border-color: rgba(0, 0, 0, .18); color: #6d7783; }
+  html[data-theme="light"] .preview { background: #f6f8fa; }
+  html[data-theme="light"] .gate { background: #eef2f6; }
+  html[data-theme="light"] .gate-box { background: #fff; }
+  html[data-theme="light"] .gate-box p { color: #5b6570; }
+  html[data-theme="light"] .btn { border-color: #cfd6df; color: #3d4753; }
+  html[data-theme="light"] .btn:hover { border-color: var(--cyan); color: var(--cyan); }
 </style>
 </head>
 <body>
@@ -329,6 +350,24 @@
       <span class="cn">回站点</span>
     </a>
   </nav>
+  <div class="nav-tools">
+    <button class="tool-btn" id="theme-toggle" type="button" aria-pressed="false" title="夜间 / 白天">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle class="sun-core" cx="12" cy="12" r="4.4"></circle>
+        <g class="sun-rays">
+          <line x1="12" y1="2.4" x2="12" y2="5.2"></line>
+          <line x1="12" y1="18.8" x2="12" y2="21.6"></line>
+          <line x1="2.4" y1="12" x2="5.2" y2="12"></line>
+          <line x1="18.8" y1="12" x2="21.6" y2="12"></line>
+          <line x1="5.2" y1="5.2" x2="7.2" y2="7.2"></line>
+          <line x1="16.8" y1="16.8" x2="18.8" y2="18.8"></line>
+          <line x1="18.8" y1="5.2" x2="16.8" y2="7.2"></line>
+          <line x1="7.2" y1="16.8" x2="5.2" y2="18.8"></line>
+        </g>
+        <path class="moon" d="M15.6 3.4a8.6 8.6 0 1 0 5 11.6 7 7 0 0 1-5-11.6z"></path>
+      </svg>
+    </button>
+  </div>
 </header>
 
 <main class="admin">
@@ -753,6 +792,24 @@
   loadCfg();
   fillForm(null);
   renderList();
+})();
+</script>
+<script>
+(function () {
+  var btn = document.getElementById("theme-toggle");
+  if (!btn) return;
+
+  function apply(theme) {
+    document.documentElement.setAttribute("data-theme", theme);
+    btn.setAttribute("aria-pressed", theme === "light" ? "true" : "false");
+    try { localStorage.setItem("bxz-theme", theme); } catch (e) { /* 忽略 */ }
+  }
+
+  apply(document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark");
+
+  btn.addEventListener("click", function () {
+    apply(document.documentElement.getAttribute("data-theme") === "light" ? "dark" : "light");
+  });
 })();
 </script>
 </body>
