@@ -122,7 +122,7 @@
   /* ---------- 主题 ---------- */
 
   var THEME_KEY = "bxz-theme";
-  var SOUND_KEY = "bxz-sound";
+  var SOUND_KEY = "bxz-sound-2";
   var themeBtn = document.getElementById("theme-toggle");
   var soundBtn = document.getElementById("sound-toggle");
 
@@ -478,7 +478,7 @@
 
   /* ---------- 背景音乐播放器 ---------- */
 
-  var VOL_KEY = "bxz-volume-2";
+  var VOL_KEY = "bxz-volume-3";
 
   var ICON_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>';
   var ICON_PAUSE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>';
