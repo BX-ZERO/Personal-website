@@ -479,7 +479,9 @@
   /* ---------- 背景音乐播放器 ---------- */
 
 
-  var ICON_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>';
+  var PLAY_KEY = "bxz-play";
+
+var ICON_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>';
   var ICON_PAUSE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>';
   var ICON_PREV = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg>';
   var ICON_NEXT = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 5h2v14h-2zM4 5l11 7-11 7z"/></svg>';
@@ -540,18 +542,25 @@
 
     load2(0);
     refresh();
-    play();
+    if (load(PLAY_KEY) !== "off") play();
 
     if (playBtn) playBtn.addEventListener("click", function () {
-      if (audio.paused) play();
-      else audio.pause();
+      if (audio.paused) {
+        store(PLAY_KEY, "on");
+        play();
+      } else {
+        audio.pause();
+        store(PLAY_KEY, "off");
+      }
     });
     if (prevBtn) prevBtn.addEventListener("click", function () {
       load2(index - 1);
+      store(PLAY_KEY, "on");
       play();
     });
     if (nextBtn) nextBtn.addEventListener("click", function () {
       load2(index + 1);
+      store(PLAY_KEY, "on");
       play();
     });
 
