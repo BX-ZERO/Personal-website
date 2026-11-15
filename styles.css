@@ -208,9 +208,9 @@ body {
 .brand-word {
   font-family: "Arial Black", "Segoe UI Black", "Helvetica Neue", "Bahnschrift", sans-serif;
   font-weight: 900;
-  font-size: 33px;
+  font-size: 26px;
   line-height: .82;
-  letter-spacing: -.035em;
+  letter-spacing: -.02em;
   text-transform: uppercase;
   color: var(--title);
   transition: color .3s ease, text-shadow .3s ease;
