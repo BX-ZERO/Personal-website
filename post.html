@@ -79,10 +79,10 @@
   .article ul, .article ol { margin: 16px 0; padding-left: 24px; }
   .article hr { border: 0; border-top: 1px solid var(--line-strong); margin: 28px 0; }
 
-  /* 插图永远不超过版心宽度 */
+  /* 插图永远不超过版心宽度，也不超过 560px */
   .article img {
     display: block;
-    max-width: 100%;
+    max-width: min(100%, 560px);
     height: auto;
     margin: 22px 0;
     border: 1px solid var(--line);

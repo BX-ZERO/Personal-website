@@ -47,7 +47,12 @@ window.BX_HOME = {
   ],
   "music": {
     "volume": 0.35,
-    "tracks": []
+    "tracks": [
+      {
+        "title": "KNOW MY NAME",
+        "src": "music/know-my-name.mp3"
+      }
+    ]
   },
   "slab": {
     "home": {

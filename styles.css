@@ -303,17 +303,16 @@ body {
   width: 38px;
   height: 38px;
   padding: 0;
-  border: 1px solid var(--line-strong);
-  background: transparent;
+  border: 0;
+  background: none;
   color: var(--dim);
   text-decoration: none;
   cursor: pointer;
-  transition: color .3s ease, border-color .3s ease, background .3s ease;
+  transition: color .3s ease, background .3s ease;
 }
 
 .tool-btn.is-on {
   color: var(--cyan);
-  border-color: var(--cyan);
 }
 
 .tool-btn svg {
@@ -329,7 +328,6 @@ body {
 .tool-btn:hover,
 .tool-btn:focus-visible {
   color: var(--cyan);
-  border-color: var(--line-strong);
   background: var(--cyan-soft);
   outline: none;
 }
@@ -346,12 +344,31 @@ body {
   transition: opacity .25s ease;
 }
 
-html[data-sound="off"] #sound-toggle .wave { opacity: 0; }
-html[data-sound="off"] #sound-toggle .slash { opacity: 1; }
+/* 声音开：实心喇叭 + 两道声波，青色 */
+html:not([data-sound="off"]) #sound-toggle {
+  color: var(--cyan);
+}
 
+html:not([data-sound="off"]) #sound-toggle .wave { opacity: 1; }
+html:not([data-sound="off"]) #sound-toggle .slash { opacity: 0; }
+
+/* 声音关：喇叭只剩轮廓，斜杠变橙，整体转灰 */
 html[data-sound="off"] #sound-toggle {
-  color: var(--orange);
-  border-color: var(--orange);
+  color: var(--dim);
+}
+
+html[data-sound="off"] #sound-toggle .spk {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+}
+
+html[data-sound="off"] #sound-toggle .wave { opacity: 0; }
+
+html[data-sound="off"] #sound-toggle .slash {
+  opacity: 1;
+  stroke: var(--orange);
+  stroke-width: 1.8;
 }
 
 /* 主题：夜间时显示太阳（点它变白天），白天时显示月亮 */
@@ -1069,4 +1086,233 @@ html[data-theme="light"] .m-field textarea { background: #fff; }
   .m-row { flex-direction: column; gap: 14px; }
   .m-field-date { flex: none; }
   .m-tools { opacity: .6; }
+}
+
+/* ---------- 首页：情报页（左时间线 + 右详情） ---------- */
+
+.info {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 0;
+  margin-top: 26px;
+}
+
+.tl {
+  position: relative;
+  margin: 0;
+  padding: 4px 0 4px 28px;
+  list-style: none;
+  border-right: 1px solid var(--line);
+}
+
+.tl::before {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 10px;
+  bottom: 10px;
+  width: 1px;
+  background: linear-gradient(to bottom, var(--cyan) 0%, rgba(53, 216, 255, .18) 45%, rgba(53, 216, 255, 0) 100%);
+}
+
+.tl-item {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 10px 18px 12px 0;
+  text-align: left;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  color: var(--dim);
+  transition: color .25s ease;
+}
+
+.tl-item::before {
+  content: "";
+  position: absolute;
+  left: -25px;
+  top: 15px;
+  width: 7px;
+  height: 7px;
+  background: var(--line-strong);
+  transition: background .25s ease, box-shadow .25s ease;
+}
+
+.tl-item:hover,
+.tl-item:focus-visible { color: var(--text); outline: none; }
+
+.tl-item:hover::before { background: var(--cyan); }
+
+.tl-item.is-on { color: var(--title); }
+
+.tl-item.is-on::before {
+  background: var(--cyan);
+  box-shadow: 0 0 0 4px rgba(53, 216, 255, .16);
+}
+
+.tl-date {
+  display: block;
+  font-family: var(--font-en);
+  font-size: 10.5px;
+  letter-spacing: .16em;
+  color: var(--dimmer);
+}
+
+.tl-title {
+  display: block;
+  margin-top: 5px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.tl-kind {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 10px;
+  letter-spacing: .18em;
+  color: var(--dimmer);
+}
+
+.tl-item.is-on .tl-kind { color: var(--cyan); }
+
+.info-body {
+  padding: 4px 0 10px 40px;
+  min-height: 360px;
+}
+
+.info-head {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+}
+
+.info-head h3 {
+  margin: 0;
+  font-family: "Arial Black", "Segoe UI Black", "Helvetica Neue", var(--font-en);
+  font-size: 34px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -.02em;
+  color: var(--title);
+}
+
+.info-kind {
+  padding: 2px 8px;
+  font-family: var(--font-en);
+  font-size: 10.5px;
+  letter-spacing: .2em;
+  color: var(--cyan);
+  border: 1px solid var(--line-strong);
+}
+
+.info-intro { margin-top: 16px; }
+
+.info-intro p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.95;
+  color: var(--text);
+}
+
+.info-stats {
+  display: flex;
+  gap: 30px;
+  margin-top: 26px;
+}
+
+.info-stats .stat {
+  font-family: var(--font-en);
+  font-size: 10.5px;
+  letter-spacing: .18em;
+  color: var(--dimmer);
+}
+
+.info-stats .stat b {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: .02em;
+  color: var(--title);
+}
+
+.info-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.info-item {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.info-item time {
+  font-family: var(--font-en);
+  font-size: 10.5px;
+  letter-spacing: .16em;
+  color: var(--dimmer);
+}
+
+.info-item h4 {
+  margin: 8px 0 10px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--title);
+}
+
+.info-item p {
+  margin: 0 0 14px;
+  font-size: 13.5px;
+  line-height: 1.9;
+  color: var(--text);
+}
+
+.info-item h4 a.info-link {
+  color: inherit;
+  text-decoration: none;
+  padding-bottom: 1px;
+  background-image: linear-gradient(var(--cyan), var(--cyan));
+  background-repeat: no-repeat;
+  background-size: 0 1px;
+  background-position: 0 100%;
+  transition: background-size .28s ease, color .2s ease;
+}
+
+.info-item h4 a.info-link:hover,
+.info-item h4 a.info-link:focus-visible {
+  color: #7fe6ff;
+  background-size: 100% 1px;
+}
+
+.info-more {
+  font-family: var(--font-en);
+  font-size: 11px;
+  letter-spacing: .18em;
+  color: var(--cyan);
+  text-decoration: none;
+}
+
+.info-more:hover { color: #7fe6ff; }
+
+.info-empty { color: var(--dimmer); font-size: 13px; }
+
+/* 工具行的说明文字换到第二行 */
+
+.tool-row { flex-wrap: wrap; }
+
+.tool-row .tool-desc {
+  flex: 0 0 100%;
+  margin-top: 8px;
+  font-size: 12.5px;
+  letter-spacing: .04em;
+  color: var(--dim);
+}
+
+@media (max-width: 900px) {
+  .info { grid-template-columns: 1fr; }
+  .tl { border-right: 0; border-bottom: 1px solid var(--line); padding-bottom: 14px; }
+  .info-body { padding: 22px 0 10px; }
 }

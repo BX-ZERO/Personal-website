@@ -234,14 +234,175 @@
   renderMoments();
 
 
+  /* ---------- 首页：左侧时间线 ---------- */
+
+  var homeNav = document.getElementById("home-nav");
+  var homeBody = document.getElementById("home-body");
+  var toolList = document.getElementById("tool-list");
+  var HOME = window.BX_HOME || {};
+  var tlItems = [];
+
+  var KIND_LABEL = { post: "动态", tool: "工具", note: "随笔" };
+
+  function buildTimeline() {
+    var out = [];
+    Array.prototype.forEach.call(HOME.entries || [], function (e) {
+      out.push({
+        date: String(e.date || ""),
+        kind: e.kind || "note",
+        title: e.title || "",
+        desc: e.desc || "",
+        href: e.href || ""
+      });
+    });
+    var ms = window.BX_MOMENTS;
+    if (Array.isArray(ms)) {
+      ms.map(function (m, i) { return { item: m, index: i }; })
+        .sort(function (a, b) { return String(b.item.date || "").localeCompare(String(a.item.date || "")); })
+        .forEach(function (o) {
+          out.push({
+            date: String(o.item.date || ""),
+            kind: "post",
+            title: o.item.title || "无标题",
+            desc: excerpt(bodyToHtml(o.item.body), 150),
+            href: postHref(o.index, o.item.title)
+          });
+        });
+    }
+    out.sort(function (a, b) { return b.date.localeCompare(a.date); });
+    return out;
+  }
+
+  function showHomeItem(i) {
+    var it = tlItems[i];
+    if (!it || !homeBody) return;
+    Array.prototype.forEach.call(homeNav.querySelectorAll(".tl-item"), function (b) {
+      b.classList.toggle("is-on", Number(b.dataset.i) === i);
+    });
+    var titleHtml = it.href
+      ? '<h4><a class="info-link" href="' + esc(it.href) + '"' +
+        (it.kind === "post" ? "" : ' target="_blank" rel="noopener"') + ">" + esc(it.title) + "</a></h4>"
+      : "<h4>" + esc(it.title) + "</h4>";
+    homeBody.innerHTML =
+      '<div class="info-item">' +
+      '<div class="info-meta"><time>' + esc(it.date.replace(/-/g, ".")) + "</time>" +
+      '<span class="info-kind">' + esc(KIND_LABEL[it.kind] || it.kind) + "</span></div>" +
+      titleHtml +
+      (it.desc ? "<p>" + esc(it.desc) + "</p>" : "") +
+      "</div>";
+  }
+
+  function applySlab(id, val, dEn, dCn) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    var en = (val && val.en) || dEn;
+    var cn = (val && val.cn) || dCn;
+    el.innerHTML = '<span class="en">' + esc(en) + '</span><span class="cn">' + esc(cn) + "</span>";
+  }
+
+  function renderHome() {
+    applySlab("slab-home", HOME.slab && HOME.slab.home, "INFORMATION", "情报");
+    if (!homeNav || !homeBody) return;
+    tlItems = buildTimeline();
+    if (!tlItems.length) {
+      homeNav.innerHTML = "";
+      homeBody.innerHTML = '<p class="info-empty">还没有条目。</p>';
+      return;
+    }
+    homeNav.innerHTML = '<ol class="tl">' + tlItems.map(function (it, i) {
+      return '<li><button class="tl-item' + (i === 0 ? " is-on" : "") + '" type="button" data-i="' + i + '">' +
+        '<span class="tl-date">' + esc(it.date.replace(/-/g, ".")) + "</span>" +
+        '<span class="tl-title">' + esc(it.title) + "</span>" +
+        '<span class="tl-kind">' + esc(KIND_LABEL[it.kind] || it.kind) + "</span>" +
+        "</button></li>";
+    }).join("") + "</ol>";
+    showHomeItem(0);
+  }
+
+  function renderTools() {
+    applySlab("slab-tools", HOME.slab && HOME.slab.tools, "AVAILABLE", "可用");
+    if (!toolList) return;
+    var tools = HOME.tools || [];
+    if (!tools.length) {
+      toolList.innerHTML = '<li><span class="tool-row"><span class="tool-cn">还没有工具</span></span></li>';
+      return;
+    }
+    toolList.innerHTML = tools.map(function (t) {
+      return '<li><a class="tool-row" href="' + esc(t.href || "#") + '" target="_blank" rel="noopener">' +
+        '<span class="tool-cn">' + esc(t.cn || "") + "</span>" +
+        '<span class="tool-en">' + esc(t.en || "") + "</span>" +
+        (t.desc ? '<span class="tool-desc">' + esc(t.desc) + "</span>" : "") +
+        "</a></li>";
+    }).join("");
+  }
+
+  if (homeNav) {
+    homeNav.addEventListener("click", function (e) {
+      var btn = e.target.closest(".tl-item");
+      if (!btn) return;
+      showHomeItem(Number(btn.dataset.i));
+    });
+  }
+
+  renderHome();
+  renderTools();
+
+  /* ---------- 背景音乐（没有播放器界面，只用音量按钮管开关） ---------- */
+
+  (function music() {
+    var cfg = HOME.music || {};
+    var tracks = Array.isArray(cfg.tracks)
+      ? cfg.tracks.filter(function (t) { return t && t.src; })
+      : [];
+    if (!tracks.length) return;
+
+    var audio = document.createElement("audio");
+    audio.preload = "auto";
+    audio.volume = typeof cfg.volume === "number" ? Math.max(0, Math.min(1, cfg.volume)) : 0.35;
+    audio.muted = root.dataset.sound === "off";
+    audio.style.display = "none";
+    document.body.appendChild(audio);
+
+    var index = 0;
+
+    function load(k) {
+      index = (k + tracks.length) % tracks.length;
+      audio.src = tracks[index].src;
+    }
+
+    function play() {
+      var p = audio.play();
+      if (p && p.catch) p.catch(function () { /* 浏览器拦下了，等一次交互 */ });
+    }
+
+    audio.addEventListener("ended", function () {
+      load(index + 1);
+      play();
+    });
+
+    load(0);
+    play();
+
+    ["pointerdown", "keydown", "touchstart"].forEach(function (evt) {
+      var once = function () {
+        if (audio.paused) play();
+        window.removeEventListener(evt, once);
+      };
+      window.addEventListener(evt, once, { passive: true });
+    });
+  })();
+
+
   /* ---------- 站主入口 ---------- */
 
   var editEntry = document.getElementById("edit-entry");
+  var editHome = document.getElementById("edit-home");
 
   if (window.BXAuth) {
     window.BXAuth.me().then(function (who) {
       if (!who || !who.ok) return;
       if (editEntry) editEntry.hidden = false;
+      if (editHome) editHome.hidden = false;
       var accLink = document.getElementById("account-link");
       if (accLink) accLink.classList.add("is-on");
     });

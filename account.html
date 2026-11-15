@@ -36,6 +36,44 @@
   .acc-note { font-size: 13.5px; line-height: 1.9; color: var(--text); max-width: 520px; }
   .acc-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
   .acc-actions .m-btn { text-decoration: none; display: inline-block; }
+
+  .pw { position: relative; max-width: 360px; margin: 2px 0 0; }
+  .pw input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 42px 10px 12px;
+    font-family: inherit;
+    font-size: 13.5px;
+    color: var(--text);
+    background: rgba(6, 10, 14, .8);
+    border: 1px solid var(--line-strong);
+    outline: none;
+    transition: border-color .2s ease;
+  }
+  html[data-theme="light"] .pw input { background: #fff; }
+  .pw input:focus { border-color: var(--cyan); }
+  .pw-eye {
+    position: absolute;
+    top: 50%;
+    right: 5px;
+    transform: translateY(-50%);
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    color: var(--dimmer);
+    background: none;
+    border: 0;
+    cursor: pointer;
+    transition: color .2s ease;
+  }
+  .pw-eye:hover, .pw-eye:focus-visible { color: var(--cyan); outline: none; }
+  .pw-eye.is-on { color: var(--cyan); }
+  .pw-eye svg { display: block; width: 16px; height: 16px; }
+  .pw-eye.is-on .pw-slash { display: none; }
+  .acc-msg { margin: 10px 0 0; font-size: 12.5px; color: var(--dimmer); }
+  .acc-msg.err { color: var(--orange); }
 </style>
 </head>
 <body>
@@ -60,7 +98,7 @@
       <span class="en">MOMENTS</span><span class="cn">动态</span>
     </a>
     <a class="nav-item" href="edit.html">
-      <span class="en">EDIT</span><span class="cn">编辑</span>
+      <span class="en">WRITE</span><span class="cn">写作</span>
     </a>
   </nav>
 </header>
@@ -88,28 +126,76 @@
     return '<p class="acc-note">' + text + "</p>";
   }
 
+  var EYE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<path d="M1.8 12S5.4 5.6 12 5.6 22.2 12 22.2 12 18.6 18.4 12 18.4 1.8 12 1.8 12Z"/>' +
+    '<circle cx="12" cy="12" r="2.9"/>' +
+    '<path class="pw-slash" d="M4.2 19.8 19.8 4.2"/></svg>';
+
   function signedOut() {
-    box.innerHTML = note("这一页只给站主本人用。用 GitHub 登录之后，站点才会给你编辑权限；没登录的人看到的永远是只读。") +
+    box.innerHTML = '<p class="acc-note">请输入密钥</p>' +
+      '<div class="pw">' +
+      '<input type="password" id="acc-pass" autocomplete="current-password" placeholder="请输入密钥">' +
+      '<button class="pw-eye" id="acc-eye" type="button" aria-label="显示密码" aria-pressed="false">' + EYE + "</button>" +
+      "</div>" +
+      '<p class="acc-msg" id="acc-msg"></p>' +
       '<div class="acc-actions">' +
-      '<button class="m-btn m-btn-main" id="acc-login" type="button">用 GitHub 登录</button>' +
+      '<button class="m-btn m-btn-main" id="acc-login" type="button">进入</button>' +
       '<a class="m-btn" href="index.html">回首页</a>' +
       "</div>";
-    document.getElementById("acc-login").addEventListener("click", function () {
-      if (window.BXAuth) window.BXAuth.login();
-    });
+    bindGate();
+  }
+
+  /* 密码框：小眼睛切换明文，回车等同点「进入」 */
+  function bindGate() {
+    var input = document.getElementById("acc-pass");
+    var eye = document.getElementById("acc-eye");
+    var msg = document.getElementById("acc-msg");
+    var btn = document.getElementById("acc-login");
+
+    if (eye && input) {
+      eye.addEventListener("click", function () {
+        var show = input.type === "password";
+        input.type = show ? "text" : "password";
+        eye.classList.toggle("is-on", show);
+        eye.setAttribute("aria-pressed", show ? "true" : "false");
+        eye.setAttribute("aria-label", show ? "隐藏密码" : "显示密码");
+        input.focus();
+      });
+    }
+
+    function go() {
+      var pw = (input && input.value ? input.value : "").trim();
+      if (!pw) {
+        msg.textContent = "先填密钥。";
+        msg.className = "acc-msg err";
+        return;
+      }
+      msg.textContent = "正在核对…";
+      msg.className = "acc-msg";
+      window.BXAuth.loginWithPassword(pw).then(function () {
+        location.reload();
+      }).catch(function (e) {
+        msg.textContent = (e && e.message) ? e.message : "密码不对";
+        msg.className = "acc-msg err";
+        if (input) input.select();
+      });
+    }
+
+    if (btn) btn.addEventListener("click", go);
+    if (input) input.addEventListener("keydown", function (e) { if (e.key === "Enter") go(); });
   }
 
   function signedIn(who) {
     var name = (who && who.login) || "BX-ZERO";
     box.innerHTML =
       '<div class="acc-card">' +
-      '<img class="acc-avatar" src="https://github.com/' + encodeURIComponent(name) + '.png?size=116" alt="">' +
       '<div class="acc-who">' +
-      '<div class="acc-name">' + name + "</div>" +
-      '<div class="acc-sub">已登录，可以写动态了。</div>' +
+      '<div class="acc-name">' + name.toUpperCase() + "</div>" +
+      '<div class="acc-sub">已登录，可以改动态与主页信息了。</div>' +
       "</div></div>" +
       '<div class="acc-actions">' +
-      '<a class="m-btn m-btn-main" href="edit.html">进入编辑台</a>' +
+      '<a class="m-btn m-btn-main" href="edit.html">进入写作台</a>' +
+      '<a class="m-btn" href="home-edit.html">改主页信息</a>' +
       '<button class="m-btn" id="acc-logout" type="button">退出登录</button>' +
       "</div>";
     document.getElementById("acc-logout").addEventListener("click", function () {

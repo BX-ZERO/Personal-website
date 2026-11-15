@@ -1,0 +1,874 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BXZERO — 主页编辑</title>
+<script>
+  (function () {
+    try {
+      var t = localStorage.getItem("bxz-theme");
+      if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+    } catch (e) { /* 忽略 */ }
+  })();
+</script>
+<style>
+  :root {
+    --bg: #06080b;
+    --card: rgba(12, 18, 24, .55);
+    --title: #eef2f6;
+    --text: #c3ccd6;
+    --dim: #8b96a3;
+    --dimmer: #5d6874;
+    --cyan: #35d8ff;
+    --orange: #ff7a1a;
+    --line: rgba(120, 140, 160, .18);
+    --line-strong: rgba(120, 140, 160, .38);
+    --font-en: "Bahnschrift", "Segoe UI", system-ui, sans-serif;
+  }
+
+  html[data-theme="light"] {
+    --bg: #eef1f5;
+    --card: #ffffff;
+    --title: #10161d;
+    --text: #2b333c;
+    --dim: #5a646f;
+    --dimmer: #8a939d;
+    --cyan: #0f8fb8;
+    --line: rgba(20, 40, 60, .12);
+    --line-strong: rgba(20, 40, 60, .26);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 0 0 80px;
+    font-family: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .bar {
+    display: flex;
+    align-items: center;
+    padding: 26px 64px 18px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .brand {
+    font-family: "Arial Black", "Segoe UI Black", var(--font-en);
+    font-size: 26px;
+    font-weight: 900;
+    letter-spacing: -.02em;
+    color: var(--title);
+    text-decoration: none;
+  }
+
+  .back {
+    margin-left: auto;
+    font-family: var(--font-en);
+    font-size: 12px;
+    letter-spacing: .2em;
+    text-align: right;
+    color: var(--dim);
+    text-decoration: none;
+  }
+
+  .back span {
+    display: block;
+    margin-top: 3px;
+    font-size: 10.5px;
+    letter-spacing: .08em;
+    color: var(--dimmer);
+  }
+
+  main {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 44px 64px 0;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 30px;
+    font-weight: 700;
+    color: var(--title);
+  }
+
+  .sub {
+    margin: 8px 0 0;
+    font-family: var(--font-en);
+    font-size: 11px;
+    letter-spacing: .16em;
+    color: var(--dimmer);
+  }
+
+  .pane {
+    margin-top: 26px;
+    padding: 18px 22px 22px;
+    background: var(--card);
+    border: 1px solid var(--line);
+  }
+
+  .pane-head {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .pane-head h2 {
+    margin: 0;
+    font-family: var(--font-en);
+    font-size: 12px;
+    letter-spacing: .22em;
+    color: var(--dim);
+  }
+
+  .pane-head .cn { font-size: 11px; color: var(--dimmer); }
+  .pane-head .fill { flex: 1; }
+
+  /* ---------- 顶部分页 ---------- */
+
+  .tabs {
+    position: relative;
+    display: flex;
+    gap: 4px;
+    margin-top: 26px;
+    padding-bottom: 1px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .tab {
+    padding: 10px 16px;
+    font-family: var(--font-en);
+    font-size: 11px;
+    letter-spacing: .18em;
+    color: var(--dim);
+    background: none;
+    border: 0;
+    cursor: pointer;
+    transition: color .22s ease;
+  }
+
+  .tab:hover { color: var(--text); }
+  .tab.is-on { color: var(--cyan); }
+  .tab:focus-visible { outline: 1px solid var(--cyan); outline-offset: -2px; }
+
+  .tab-ink {
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--cyan);
+    box-shadow: 0 0 10px rgba(53, 216, 255, .7);
+    transition: left .3s cubic-bezier(.4, 0, .2, 1), width .3s cubic-bezier(.4, 0, .2, 1);
+  }
+
+  /* 一次只显示一块 */
+
+  .pane { display: none; }
+
+  .pane.is-on {
+    display: block;
+    animation: paneIn .34s cubic-bezier(.2, .7, .3, 1) both;
+  }
+
+  @keyframes paneIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* 点这一块的小标题可以把它折叠起来 */
+
+  .pane-head { cursor: pointer; user-select: none; }
+
+  .pane-head::after {
+    content: "▾";
+    margin-left: 2px;
+    font-size: 11px;
+    color: var(--dimmer);
+    transition: transform .25s ease;
+  }
+
+  .pane.is-fold .pane-head::after { transform: rotate(-90deg); }
+
+  .pane-body {
+    display: grid;
+    grid-template-rows: 1fr;
+    transition: grid-template-rows .3s cubic-bezier(.4, 0, .2, 1), opacity .25s ease;
+  }
+
+  .pane.is-fold .pane-body {
+    grid-template-rows: 0fr;
+    opacity: 0;
+  }
+
+  .pane-inner { overflow: hidden; min-height: 0; }
+
+  label.f {
+    display: block;
+    margin-bottom: 14px;
+  }
+
+  label.f > span {
+    display: block;
+    margin-bottom: 6px;
+    font-family: var(--font-en);
+    font-size: 10.5px;
+    letter-spacing: .18em;
+    color: var(--dimmer);
+  }
+
+  input, textarea {
+    width: 100%;
+    padding: 9px 11px;
+    font-family: inherit;
+    font-size: 13.5px;
+    line-height: 1.7;
+    color: var(--text);
+    background: rgba(0, 0, 0, .22);
+    border: 1px solid var(--line);
+    outline: none;
+    resize: vertical;
+  }
+
+  html[data-theme="light"] input,
+  html[data-theme="light"] textarea { background: #fff; }
+
+  input:focus, textarea:focus { border-color: var(--cyan); }
+
+  .two { display: grid; grid-template-columns: 120px 1fr; gap: 14px; }
+  .three { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+  .card {
+    margin-bottom: 12px;
+    padding: 14px;
+    border: 1px solid var(--line);
+    background: rgba(0, 0, 0, .16);
+  }
+
+  html[data-theme="light"] .card { background: #f7f9fb; }
+
+  .card .two, .card .three { gap: 10px; }
+
+  .card .acts {
+    display: flex;
+    gap: 6px;
+    justify-content: flex-end;
+    margin-top: 8px;
+  }
+
+  .btn {
+    padding: 7px 14px;
+    font-family: var(--font-en);
+    font-size: 11px;
+    letter-spacing: .14em;
+    color: var(--dim);
+    background: none;
+    border: 1px solid var(--line-strong);
+    cursor: pointer;
+    transition: color .2s ease, border-color .2s ease, background .2s ease;
+  }
+
+  .btn:hover, .btn:focus-visible {
+    color: var(--cyan);
+    border-color: var(--cyan);
+    background: rgba(53, 216, 255, .06);
+    outline: none;
+  }
+
+  .btn.primary {
+    color: #041017;
+    background: var(--cyan);
+    border-color: var(--cyan);
+    font-weight: 700;
+  }
+
+  .btn.primary:hover { background: #7fe6ff; border-color: #7fe6ff; color: #041017; }
+
+  .btn.mini { padding: 4px 9px; font-size: 10.5px; letter-spacing: .1em; }
+
+  .btn.danger:hover { color: var(--orange); border-color: var(--orange); background: rgba(255, 122, 26, .08); }
+
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 24px;
+  }
+
+  .status { font-size: 12px; color: var(--dimmer); }
+  .status.ok { color: var(--cyan); }
+  .status.err { color: var(--orange); }
+
+  .gate {
+    margin-top: 30px;
+    padding: 26px;
+    text-align: center;
+    border: 1px solid var(--line);
+    background: var(--card);
+  }
+
+  .gate p { margin: 0 0 16px; font-size: 13px; color: var(--dim); }
+
+  /* 密码框右边的小眼睛 */
+  .pw { position: relative; }
+
+  .pw input { padding-right: 42px; }
+
+  .pw-eye {
+    position: absolute;
+    top: 50%;
+    right: 5px;
+    transform: translateY(-50%);
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    color: var(--dimmer);
+    background: none;
+    border: 0;
+    cursor: pointer;
+    transition: color .2s ease;
+  }
+
+  .pw-eye:hover,
+  .pw-eye:focus-visible { color: var(--cyan); outline: none; }
+
+  .pw-eye.is-on { color: var(--cyan); }
+
+  .pw-eye svg { display: block; width: 16px; height: 16px; }
+
+  .pw-eye.is-on .pw-slash { display: none; }
+
+  @media (max-width: 760px) {
+    .bar, main { padding-left: 20px; padding-right: 20px; }
+    .two, .three { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <a class="brand" href="index.html">BX-ZERO</a>
+  <a class="back" href="index.html">BACK<span>回站点</span></a>
+</header>
+
+<main>
+  <h1>主页信息</h1>
+  <p class="sub">INFORMATION · 改完保存，一分钟左右站点会自己更新</p>
+
+  <div class="gate" id="gate">
+    <p>请输入密钥</p>
+    <div class="pw" style="max-width:280px;margin:0 auto 14px;">
+      <input id="pass" type="password" autocomplete="current-password" placeholder="密钥">
+      <button class="pw-eye" id="pass-eye" type="button" aria-label="显示密码" aria-pressed="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M1.8 12S5.4 5.6 12 5.6 22.2 12 22.2 12 18.6 18.4 12 18.4 1.8 12 1.8 12Z"/>
+          <circle cx="12" cy="12" r="2.9"/>
+          <path class="pw-slash" d="M4.2 19.8 19.8 4.2"/>
+        </svg>
+      </button>
+    </div>
+    <button class="btn primary" id="sign-in" type="button">进入</button>
+    <p class="status" id="gate-msg"></p>
+  </div>
+
+  <div id="form" hidden>
+
+    <nav class="tabs" id="tabs">
+      <button class="tab is-on" type="button" data-tab="basic">区块标题</button>
+      <button class="tab" type="button" data-tab="tools">工具箱</button>
+      <button class="tab" type="button" data-tab="music">背景音乐</button>
+      <button class="tab" type="button" data-tab="entries">手写条目</button>
+      <span class="tab-ink" id="tab-ink"></span>
+    </nav>
+
+    <section class="pane is-on" data-pane="basic">
+      <div class="pane-head"><h2>BASIC</h2><span class="cn">区块标题</span></div>
+      <div class="pane-body"><div class="pane-inner">
+        <div class="two">
+          <label class="f"><span>首页区块英文</span><input id="f-slab-home-en" type="text" placeholder="INFORMATION"></label>
+          <label class="f"><span>首页区块中文</span><input id="f-slab-home-cn" type="text" placeholder="情报"></label>
+        </div>
+        <div class="two">
+          <label class="f"><span>工具区块英文</span><input id="f-slab-tools-en" type="text" placeholder="AVAILABLE"></label>
+          <label class="f"><span>工具区块中文</span><input id="f-slab-tools-cn" type="text" placeholder="可用"></label>
+        </div>
+      </div></div>
+    </section>
+
+    <section class="pane" data-pane="tools">
+      <div class="pane-head"><h2>TOOLS</h2><span class="cn">工具箱</span><span class="fill"></span>
+        <button class="btn mini" id="add-tool" type="button">加一个工具</button>
+      </div>
+      <div class="pane-body"><div class="pane-inner"><div id="tools"></div></div></div>
+    </section>
+
+    <section class="pane" data-pane="music">
+      <div class="pane-head"><h2>MUSIC</h2><span class="cn">背景音乐（访客只能开关音量）</span><span class="fill"></span>
+        <button class="btn mini" id="pick-audio" type="button">上传音频</button>
+        <button class="btn mini" id="add-track" type="button">加一首</button>
+      </div>
+      <div class="pane-body"><div class="pane-inner">
+        <input id="audio-file" type="file" accept="audio/*" multiple hidden>
+        <label class="f"><span>音量 0 – 1</span>
+          <input id="f-volume" type="number" min="0" max="1" step="0.05">
+        </label>
+        <div id="tracks"></div>
+      </div></div>
+    </section>
+
+    <section class="pane" data-pane="entries">
+      <div class="pane-head"><h2>ENTRIES</h2><span class="cn">手写条目（动态会自动并进来）</span><span class="fill"></span>
+        <button class="btn mini" id="add-entry" type="button">加一条</button>
+      </div>
+      <div class="pane-body"><div class="pane-inner">
+        <p class="status">首页上那几条「动态」来自 moments.js，要删得去<a href="edit.html">写作台</a>；这里只管下面这些手写条目（工具上线之类）。</p>
+        <div id="entries"></div>
+      </div></div>
+    </section>
+
+    <div class="row">
+      <button class="btn primary" id="save" type="button">保存到仓库</button>
+      <button class="btn" id="reload" type="button">从仓库重读</button>
+      <span class="status" id="status"></span>
+    </div>
+
+  </div>
+</main>
+
+<script src="home.js"></script>
+<script src="auth.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  var DATA_PATH = "home.js";
+
+  var gate = document.getElementById("gate");
+  var formBox = document.getElementById("form");
+  var statusBox = document.getElementById("status");
+
+  var state = clone(window.BX_HOME || {});
+
+  function clone(o) {
+    return JSON.parse(JSON.stringify(o || {}));
+  }
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+    });
+  }
+
+  function setStatus(text, kind) {
+    statusBox.textContent = text || "";
+    statusBox.className = "status" + (kind ? " " + kind : "");
+  }
+
+  /* ---------- 渲染 ---------- */
+
+  var fSlabHomeEn = document.getElementById("f-slab-home-en");
+  var fSlabHomeCn = document.getElementById("f-slab-home-cn");
+  var fSlabToolsEn = document.getElementById("f-slab-tools-en");
+  var fSlabToolsCn = document.getElementById("f-slab-tools-cn");
+
+  function slabOf() {
+    if (!state.slab || typeof state.slab !== "object") state.slab = {};
+    if (!state.slab.home) state.slab.home = { en: "INFORMATION", cn: "情报" };
+    if (!state.slab.tools) state.slab.tools = { en: "AVAILABLE", cn: "可用" };
+    return state.slab;
+  }
+
+  function bindSlab(input, which, field) {
+    input.addEventListener("input", function () {
+      slabOf()[which][field] = input.value;
+    });
+  }
+
+  bindSlab(fSlabHomeEn, "home", "en");
+  bindSlab(fSlabHomeCn, "home", "cn");
+  bindSlab(fSlabToolsEn, "tools", "en");
+  bindSlab(fSlabToolsCn, "tools", "cn");
+  var toolsBox = document.getElementById("tools");
+  var entriesBox = document.getElementById("entries");
+  var tracksBox = document.getElementById("tracks");
+  var fVolume = document.getElementById("f-volume");
+
+  function musicOf() {
+    if (!state.music || typeof state.music !== "object") state.music = { volume: 0.35, tracks: [] };
+    if (!Array.isArray(state.music.tracks)) state.music.tracks = [];
+    return state.music;
+  }
+
+  function renderTracks() {
+    var m = musicOf();
+    tracksBox.innerHTML = m.tracks.map(function (t, i) {
+      return '<div class="card" data-i="' + i + '">' +
+        '<div class="two">' +
+        '<label class="f"><span>曲名</span><input data-k="title" type="text" value="' + esc(t.title) + '"></label>' +
+        '<label class="f"><span>文件路径</span><input data-k="src" type="text" placeholder="music/xxx.mp3" value="' + esc(t.src) + '"></label>' +
+        "</div>" +
+        '<div class="acts">' +
+        '<button class="btn mini" data-act="up" type="button">上移</button>' +
+        '<button class="btn mini" data-act="down" type="button">下移</button>' +
+        '<button class="btn mini danger" data-act="del" type="button">删除</button>' +
+        "</div></div>";
+    }).join("") || '<p class="status">还没有曲目。把 mp3 放进仓库的 music/ 目录，再把路径填到这里。</p>';
+  }
+
+  function renderTools() {
+    var rows = state.tools || [];
+    toolsBox.innerHTML = rows.map(function (t, i) {
+      return '<div class="card" data-i="' + i + '">' +
+        '<div class="two">' +
+        '<label class="f"><span>中文名</span><input data-k="cn" type="text" value="' + esc(t.cn) + '"></label>' +
+        '<label class="f"><span>仓库名 / 代号</span><input data-k="en" type="text" value="' + esc(t.en) + '"></label>' +
+        "</div>" +
+        '<label class="f"><span>链接</span><input data-k="href" type="text" value="' + esc(t.href) + '"></label>' +
+        '<div class="two">' +
+        '<label class="f"><span>标签</span><input data-k="tag" type="text" value="' + esc(t.tag) + '"></label>' +
+        '<label class="f"><span>说明</span><input data-k="desc" type="text" value="' + esc(t.desc) + '"></label>' +
+        "</div>" +
+        '<div class="acts">' +
+        '<button class="btn mini" data-act="up" type="button">上移</button>' +
+        '<button class="btn mini" data-act="down" type="button">下移</button>' +
+        '<button class="btn mini danger" data-act="del" type="button">删除</button>' +
+        "</div></div>";
+    }).join("") || '<p class="status">还没有工具。</p>';
+  }
+
+  function renderEntries() {
+    var rows = state.entries || [];
+    entriesBox.innerHTML = rows.map(function (e, i) {
+      return '<div class="card" data-i="' + i + '">' +
+        '<div class="two">' +
+        '<label class="f"><span>日期</span><input data-k="date" type="date" value="' + esc(e.date) + '"></label>' +
+        '<label class="f"><span>标题</span><input data-k="title" type="text" value="' + esc(e.title) + '"></label>' +
+        "</div>" +
+        '<div class="two">' +
+        '<label class="f"><span>类型</span><select data-k="kind">' +
+        '<option value="note"' + (e.kind === "note" ? " selected" : "") + ">随笔</option>" +
+        '<option value="tool"' + (e.kind === "tool" ? " selected" : "") + ">工具</option>" +
+        "</select></label>" +
+        '<label class="f"><span>链接（可空）</span><input data-k="href" type="text" value="' + esc(e.href) + '"></label>' +
+        "</div>" +
+        '<label class="f"><span>描述</span><textarea data-k="desc" rows="2">' + esc(e.desc) + "</textarea></label>" +
+        '<div class="acts">' +
+        '<button class="btn mini" data-act="up" type="button">上移</button>' +
+        '<button class="btn mini" data-act="down" type="button">下移</button>' +
+        '<button class="btn mini danger" data-act="del" type="button">删除</button>' +
+        "</div></div>";
+    }).join("") || '<p class="status">还没有手写条目。</p>';
+  }
+
+  function renderAll() {
+    var sl = slabOf();
+    fSlabHomeEn.value = sl.home.en || "";
+    fSlabHomeCn.value = sl.home.cn || "";
+    fSlabToolsEn.value = sl.tools.en || "";
+    fSlabToolsCn.value = sl.tools.cn || "";
+    fVolume.value = typeof musicOf().volume === "number" ? musicOf().volume : 0.35;
+    renderTools();
+    renderTracks();
+    renderEntries();
+  }
+
+  /* ---------- 编辑 ---------- */
+
+  function bindList(box, getList, rerender) {
+    box.addEventListener("input", function (e) {
+      var field = e.target.closest("[data-k]");
+      var card = e.target.closest(".card");
+      if (!field || !card) return;
+      var i = Number(card.dataset.i);
+      var list = getList();
+      if (!list[i]) return;
+      list[i][field.dataset.k] = field.value;
+    });
+
+    box.addEventListener("change", function (e) {
+      var field = e.target.closest("[data-k]");
+      var card = e.target.closest(".card");
+      if (!field || !card) return;
+      var i = Number(card.dataset.i);
+      var list = getList();
+      if (!list[i]) return;
+      list[i][field.dataset.k] = field.value;
+    });
+
+    box.addEventListener("click", function (e) {
+      var btn = e.target.closest("[data-act]");
+      if (!btn) return;
+      var card = e.target.closest(".card");
+      if (!card) return;
+      var i = Number(card.dataset.i);
+      var list = getList();
+      var act = btn.dataset.act;
+      if (act === "del") {
+        list.splice(i, 1);
+      } else if (act === "up" && i > 0) {
+        var tmp = list[i - 1];
+        list[i - 1] = list[i];
+        list[i] = tmp;
+      } else if (act === "down" && i < list.length - 1) {
+        var tmp2 = list[i + 1];
+        list[i + 1] = list[i];
+        list[i] = tmp2;
+      }
+      rerender();
+    });
+  }
+
+  bindList(toolsBox, function () { return state.tools || (state.tools = []); }, renderTools);
+  bindList(entriesBox, function () { return state.entries || (state.entries = []); }, renderEntries);
+  bindList(tracksBox, function () { return musicOf().tracks; }, renderTracks);
+
+  fVolume.addEventListener("input", function () {
+    var v = parseFloat(fVolume.value);
+    musicOf().volume = isNaN(v) ? 0.35 : Math.max(0, Math.min(1, v));
+  });
+
+  document.getElementById("add-track").addEventListener("click", function () {
+    musicOf().tracks.push({ title: "新曲目", src: "music/" });
+    renderTracks();
+  });
+
+  /* 上传本地音频：先传到仓库 music/ 目录，再自动填进曲目 */
+
+  var pickAudio = document.getElementById("pick-audio");
+  var audioFile = document.getElementById("audio-file");
+
+  function readBase64(file) {
+    return new Promise(function (res, rej) {
+      var fr = new FileReader();
+      fr.onload = function () { res(String(fr.result).split(",")[1] || ""); };
+      fr.onerror = function () { rej(new Error("读不到这个文件")); };
+      fr.readAsDataURL(file);
+    });
+  }
+
+  function audioPath(file) {
+    var m = /\.([A-Za-z0-9]+)$/.exec(file.name || "");
+    var ext = m ? m[1].toLowerCase() : "mp3";
+    return "music/" + Date.now() + "-" + Math.random().toString(36).slice(2, 8) + "." + ext;
+  }
+
+  async function sendAudio(files) {
+    if (!files || !files.length) return;
+    for (var i = 0; i < files.length; i++) {
+      var file = files[i];
+      setStatus("上传中 " + (i + 1) + " / " + files.length + "：" + file.name);
+      try {
+        var path = audioPath(file);
+        var b64 = await readBase64(file);
+        await window.BXAuth.upload(path, b64, "上传音乐");
+        musicOf().tracks.push({ title: (file.name || "曲目").replace(/\.[^.]+$/, ""), src: path });
+        renderTracks();
+      } catch (e) {
+        setStatus("上传失败：" + (e && e.message ? e.message : e), "bad");
+        return;
+      }
+    }
+    setStatus("音频已传进仓库，点「保存到仓库」之后曲目才会生效。", "ok");
+  }
+
+  pickAudio.addEventListener("click", function () {
+    audioFile.click();
+  });
+
+  audioFile.addEventListener("change", function () {
+    var files = [].slice.call(audioFile.files || []);
+    audioFile.value = "";
+    sendAudio(files);
+  });
+
+  document.getElementById("add-tool").addEventListener("click", function () {
+    state.tools = state.tools || [];
+    state.tools.push({ cn: "新工具", en: "repo-name", desc: "一句话说明。", href: "", tag: "TOOL" });
+    renderTools();
+  });
+
+  document.getElementById("add-entry").addEventListener("click", function () {
+    state.entries = state.entries || [];
+    state.entries.push({
+      date: new Date().toISOString().slice(0, 10),
+      kind: "note",
+      title: "新条目",
+      desc: "",
+      href: ""
+    });
+    renderEntries();
+  });
+
+  /* ---------- 读写仓库 ---------- */
+
+  var HEADER = [
+    "/* ==========================================================",
+    "   首页信息",
+    "   这个文件可以直接手改，也可以用 home-edit.html 在线改后保存",
+    "",
+    "   entries 里是手写的条目（工具上线、杂事），动态会从 moments.js 自动并进来。",
+    "   kind 取值：post（动态，自动的） / tool（工具） / note（随手记）",
+    "   ========================================================== */",
+    "",
+    ""
+  ].join("\n");
+
+  function toFileText(d) {
+    return HEADER + "window.BX_HOME = " + JSON.stringify(d, null, 2) + ";\n";
+  }
+
+  function parseFileText(text) {
+    var m = String(text).match(/window\.BX_HOME\s*=\s*([\s\S]*?);?\s*$/);
+    if (!m) return null;
+    try {
+      return JSON.parse(m[1]);
+    } catch (e) {
+      try {
+        return new Function("return (" + m[1] + ");")();
+      } catch (e2) {
+        return null;
+      }
+    }
+  }
+
+  function loadRemote() {
+    if (!window.BXAuth) return;
+    setStatus("正在读仓库…");
+    window.BXAuth.read(DATA_PATH).then(function (res) {
+      var parsed = parseFileText(res.text || "");
+      if (parsed) {
+        state = parsed;
+        renderAll();
+        setStatus("已从仓库读到最新版本", "ok");
+      } else {
+        setStatus("仓库里的文件没解析出来，先用页面上的内容", "err");
+      }
+    }).catch(function (e) {
+      setStatus("读取失败：" + e.message, "err");
+    });
+  }
+
+  function doSave() {
+    if (!window.BXAuth) {
+      setStatus("登录之后才能保存", "err");
+      return;
+    }
+    setStatus("正在提交…");
+    window.BXAuth.save(DATA_PATH, toFileText(state), "更新主页信息").then(function () {
+      setStatus("已提交。Pages 一般一分钟内重建完，稍等刷新站点。", "ok");
+    }).catch(function (e) {
+      setStatus("提交失败：" + e.message, "err");
+    });
+  }
+
+  document.getElementById("save").addEventListener("click", doSave);
+  document.getElementById("reload").addEventListener("click", loadRemote);
+  document.getElementById("sign-in").addEventListener("click", function () {
+    var input = document.getElementById("pass");
+    var msg = document.getElementById("gate-msg");
+    var pw = (input && input.value ? input.value : "").trim();
+    if (!window.BXAuth) { msg.textContent = "auth.js 没加载。"; return; }
+    if (!pw) { msg.textContent = "先填密钥。"; return; }
+    msg.textContent = "正在核对…";
+    window.BXAuth.loginWithPassword(pw).then(function () {
+      location.reload();
+    }).catch(function (e) {
+      msg.textContent = e && e.message ? e.message : "密码不对";
+      if (input) input.select();
+    });
+  });
+
+  var passInput = document.getElementById("pass");
+  if (passInput) {
+    passInput.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") document.getElementById("sign-in").click();
+    });
+  }
+
+  /* 小眼睛：点一下在掩码与明文之间切换 */
+  (function bindEye() {
+    var eye = document.getElementById("pass-eye");
+    if (!passInput || !eye) return;
+    eye.addEventListener("click", function () {
+      var show = passInput.type === "password";
+      passInput.type = show ? "text" : "password";
+      eye.classList.toggle("is-on", show);
+      eye.setAttribute("aria-pressed", show ? "true" : "false");
+      eye.setAttribute("aria-label", show ? "隐藏密码" : "显示密码");
+      passInput.focus();
+    });
+  })();
+
+  /* ---------- 顶部分页与折叠 ---------- */
+
+  var tabsBox = document.getElementById("tabs");
+  var tabInk = document.getElementById("tab-ink");
+  var panes = Array.prototype.slice.call(document.querySelectorAll("[data-pane]"));
+
+  function moveInk(tab) {
+    if (!tab || !tabInk) return;
+    tabInk.style.left = tab.offsetLeft + "px";
+    tabInk.style.width = tab.offsetWidth + "px";
+  }
+
+  function pickTab(name) {
+    if (!tabsBox) return;
+    Array.prototype.forEach.call(tabsBox.querySelectorAll(".tab"), function (b) {
+      b.classList.toggle("is-on", b.dataset.tab === name);
+    });
+    panes.forEach(function (p) {
+      p.classList.toggle("is-on", p.dataset.pane === name);
+    });
+    moveInk(tabsBox.querySelector(".tab.is-on"));
+  }
+
+  if (tabsBox) {
+    tabsBox.addEventListener("click", function (e) {
+      var tab = e.target.closest("[data-tab]");
+      if (tab) pickTab(tab.dataset.tab);
+    });
+  }
+
+  panes.forEach(function (p) {
+    var head = p.querySelector(".pane-head");
+    if (!head) return;
+    head.addEventListener("click", function (e) {
+      if (e.target.closest("button")) return;
+      p.classList.toggle("is-fold");
+    });
+  });
+
+  window.addEventListener("resize", function () {
+    moveInk(tabsBox && tabsBox.querySelector(".tab.is-on"));
+  });
+
+  /* ---------- 启动 ---------- */
+
+  renderAll();
+
+  if (window.BXAuth) {
+    window.BXAuth.me().then(function (who) {
+      if (who && who.ok) {
+        gate.hidden = true;
+        formBox.hidden = false;
+        pickTab("basic");
+        loadRemote();
+      } else if (who && who.reason && who.reason !== "none") {
+        var p = gate.querySelector("p");
+        if (p) p.textContent = "上次的登录没认出来（" + who.reason + "），重新点一次。";
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

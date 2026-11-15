@@ -76,8 +76,23 @@
 
 <main>
 
-  <!-- ================= 首页：内容先空着 ================= -->
-  <section class="view is-on" id="view-home"></section>
+  <!-- ================= 首页：左侧时间线 ================= -->
+  <section class="view is-on" id="view-home">
+
+    <div class="slab">
+      <div class="slab-head">
+        <h2 id="slab-home"><span class="en">INFORMATION</span><span class="cn">情报</span></h2>
+        <span class="slab-line"></span>
+        <a class="edit-link" id="edit-home" href="home-edit.html" hidden>EDIT</a>
+      </div>
+
+      <div class="info">
+        <aside class="info-nav" id="home-nav"></aside>
+        <article class="info-body" id="home-body"></article>
+      </div>
+    </div>
+
+  </section>
 
   <!-- ================= 动态 ================= -->
   <section class="view" id="view-moments">
@@ -105,30 +120,11 @@
 
     <div class="slab">
       <div class="slab-head">
-        <h2><span class="en">AVAILABLE</span><span class="cn">可用</span></h2>
+        <h2 id="slab-tools"><span class="en">AVAILABLE</span><span class="cn">可用</span></h2>
         <span class="slab-line"></span>
       </div>
 
-      <ul class="tools">
-        <li>
-          <a class="tool-row" href="https://bx-zero.github.io/quiz-review/" target="_blank" rel="noopener">
-            <span class="tool-cn">错题复习</span>
-            <span class="tool-en">quiz-review</span>
-          </a>
-        </li>
-        <li>
-          <a class="tool-row" href="https://bx-zero.github.io/arknights-event-calc/" target="_blank" rel="noopener">
-            <span class="tool-cn">明日方舟活动代币计算器</span>
-            <span class="tool-en">arknights-event-calc</span>
-          </a>
-        </li>
-        <li>
-          <a class="tool-row" href="https://bx-zero.github.io/coc-notify/" target="_blank" rel="noopener">
-            <span class="tool-cn">部落冲突通知助手</span>
-            <span class="tool-en">coc-notify</span>
-          </a>
-        </li>
-      </ul>
+      <ul class="tools" id="tool-list"></ul>
     </div>
 
   </section>
@@ -140,6 +136,7 @@
   <img class="badge" src="img/dsh-badge.png" width="121" height="20" alt="powered by dsh">
 </footer>
 
+<script src="home.js"></script>
 <script src="moments.js"></script>
 <script src="auth.js"></script>
 <script src="main.js"></script>

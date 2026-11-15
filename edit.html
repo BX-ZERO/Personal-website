@@ -71,11 +71,46 @@
   .grid2 {
     display: grid;
     grid-template-columns: 1.15fr .85fr;
-    gap: 18px;
+    gap: 0;
     align-items: start;
   }
 
+  /* 下排两张卡片紧贴上方编辑框，不要被 .pane + .pane 的间距顶开 */
+  .grid2 > .pane { margin-top: 0; }
+  .grid2 > .pane + .pane { border-left: 0; }
+
   .field { margin-bottom: 14px; }
+
+  /* 密码框右边的小眼睛 */
+  .pw { position: relative; }
+
+  .pw input { padding-right: 42px; }
+
+  .pw-eye {
+    position: absolute;
+    top: 50%;
+    right: 5px;
+    transform: translateY(-50%);
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    color: var(--dimmer);
+    background: none;
+    border: 0;
+    cursor: pointer;
+    transition: color .2s ease;
+  }
+
+  .pw-eye:hover,
+  .pw-eye:focus-visible { color: var(--cyan); outline: none; }
+
+  .pw-eye.is-on { color: var(--cyan); }
+
+  .pw-eye svg { display: block; width: 16px; height: 16px; }
+
+  .pw-eye.is-on .pw-slash { display: none; }
 
   .field > label {
     display: block;
@@ -368,7 +403,84 @@
     color: var(--dimmer);
   }
 
-  .rt-body img, .article img { max-width: 100%; height: auto; display: block; margin: 16px 0; }
+  .rt-body img, .article img { max-width: min(100%, 560px); height: auto; display: block; margin: 16px 0; }
+
+  /* 编辑区里不渲染图片本身，只留一枚标签 */
+  .rt-body img { display: none; }
+
+  .rt-body .img-chip {
+    display: inline-block;
+    margin: 8px 0;
+    padding: 4px 10px;
+    font-size: 12px;
+    color: var(--dim);
+    background: rgba(53, 216, 255, .08);
+    border: 1px dashed var(--line-strong);
+    user-select: none;
+  }
+
+  .rt-body .img-chip::before {
+    content: "▣ ";
+    color: var(--cyan);
+  }
+
+  /* 附件区：图片按顺序排在正文之后 */
+  .atts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 0 14px;
+    border-top: 1px solid var(--line);
+  }
+
+  .atts:empty { display: none; }
+
+  .att {
+    width: 132px;
+    border: 1px solid var(--line-strong);
+    background: rgba(0, 0, 0, .2);
+  }
+
+  .att-thumb {
+    display: block;
+    width: 100%;
+    height: 84px;
+    object-fit: cover;
+    background: rgba(255, 255, 255, .04);
+  }
+
+  .att-foot {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 6px;
+    font-size: 10.5px;
+    color: var(--dimmer);
+  }
+
+  .att-name {
+    flex: 1;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .att-btn {
+    min-width: 18px;
+    height: 18px;
+    padding: 0 3px;
+    font-size: 11px;
+    line-height: 1;
+    color: var(--dim);
+    background: none;
+    border: 1px solid var(--line-strong);
+    cursor: pointer;
+  }
+
+  .att-btn:hover { color: var(--cyan); border-color: var(--cyan); }
+  .att-btn.del:hover { color: #ff7a1a; border-color: #ff7a1a; }
+
+  html[data-theme="light"] .att { background: #fff; border-color: #d8dee6; }
   .rt-body blockquote, .article blockquote {
     margin: 16px 0;
     padding: 6px 16px;
@@ -432,6 +544,7 @@
     backdrop-filter: blur(3px);
     opacity: 0;
     transition: opacity .18s ease;
+    pointer-events: none;
   }
 
   .float-preview[hidden] { display: none; }
@@ -447,6 +560,7 @@
     transform: translateY(14px) scale(.985);
     opacity: .4;
     transition: transform .24s cubic-bezier(.2, .8, .3, 1), opacity .24s ease;
+    pointer-events: auto;
   }
 
   .float-preview.is-open .float-sheet { transform: none; opacity: 1; }
@@ -510,13 +624,22 @@
 </head>
 <body>
 
-<!-- 口令门：没口令就进不了编辑界面 -->
+<!-- 口令门：没密码就进不了编辑界面 -->
 <div class="gate" id="gate">
   <div class="gate-box">
     <h2>RESTRICTED</h2>
-    <p>这一页只给站主用。点下面的按钮，用你的 GitHub 账号登录。</p>
-    <input type="password" id="gate-input" hidden autocomplete="off">
-    <button class="btn primary" id="gate-ok" type="button">用 GitHub 登录</button>
+    <p>请输入密钥</p>
+    <div class="pw">
+      <input type="password" id="gate-input" autocomplete="current-password" placeholder="密钥">
+      <button class="pw-eye" id="gate-eye" type="button" aria-label="显示密码" aria-pressed="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M1.8 12S5.4 5.6 12 5.6 22.2 12 22.2 12 18.6 18.4 12 18.4 1.8 12 1.8 12Z"/>
+          <circle cx="12" cy="12" r="2.9"/>
+          <path class="pw-slash" d="M4.2 19.8 19.8 4.2"/>
+        </svg>
+      </button>
+    </div>
+    <button class="btn primary" id="gate-ok" type="button">进入</button>
     <p class="gate-msg" id="gate-msg"></p>
   </div>
 </div>
@@ -659,9 +782,12 @@
           <button type="button" id="rt-hr" title="分隔线">分隔</button>
           <button type="button" id="rt-clear" title="清除格式">清</button>
           <span class="rt-sep"></span>
+          <button type="button" id="rt-draft" title="把当前内容存在本机">存草稿</button>
+          <span class="rt-sep"></span>
           <input class="rt-file" id="rt-file-name" type="text" readonly placeholder="还没有插图" title="最近插入的图片">
         </div>
         <div class="rt-body" id="f-body" contenteditable="true"></div>
+        <div class="atts" id="atts"></div>
       </div>
       <input type="file" id="img-file" accept="image/*" multiple hidden>
     </div>
@@ -703,7 +829,6 @@
   <div class="float-sheet">
     <div class="float-head">
       <span class="float-tag">POST PREVIEW</span>
-      <span class="float-close" id="float-close">关闭</span>
     </div>
     <div class="float-scroll">
       <div class="article" id="float-body"></div>
@@ -717,6 +842,14 @@
   "use strict";
 
   /* ---------- 登录门 ---------- */
+
+  window.addEventListener("error", function (e) {
+    var box = document.getElementById("status");
+    if (box) {
+      box.textContent = "脚本错误：" + e.message + "（第 " + e.lineno + " 行）";
+      box.className = "status err";
+    }
+  });
 
   var gate = document.getElementById("gate");
   var gateOk = document.getElementById("gate-ok");
@@ -733,9 +866,45 @@
     }
   }
 
+  var gateInput = document.getElementById("gate-input");
+
+  /* 小眼睛：点一下在掩码与明文之间切换，切完把焦点还给输入框 */
+  (function bindEye() {
+    var eye = document.getElementById("gate-eye");
+    if (!gateInput || !eye) return;
+    eye.addEventListener("click", function () {
+      var show = gateInput.type === "password";
+      gateInput.type = show ? "text" : "password";
+      eye.classList.toggle("is-on", show);
+      eye.setAttribute("aria-pressed", show ? "true" : "false");
+      eye.setAttribute("aria-label", show ? "隐藏密码" : "显示密码");
+      gateInput.focus();
+    });
+  })();
+
   function signIn() {
-    if (window.BXAuth) window.BXAuth.login();
-    else gateMsg.textContent = "auth.js 没加载，检查同目录下有没有这个文件。";
+    if (!window.BXAuth) {
+      gateMsg.textContent = "auth.js 没加载，检查同目录下有没有这个文件。";
+      return;
+    }
+    var pw = (gateInput && gateInput.value ? gateInput.value : "").trim();
+    if (!pw) {
+      gateMsg.textContent = "先填密钥。";
+      return;
+    }
+    gateMsg.textContent = "正在核对…";
+    window.BXAuth.loginWithPassword(pw).then(function () {
+      location.reload();
+    }).catch(function (e) {
+      gateMsg.textContent = e && e.message ? e.message : "密码不对";
+      if (gateInput) gateInput.select();
+    });
+  }
+
+  if (gateInput) {
+    gateInput.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") signIn();
+    });
   }
 
   gateOk.addEventListener("click", signIn);
@@ -749,8 +918,16 @@
     var ok = !!(who && who.ok);
     openGate(ok);
     if (authState) authState.textContent = ok ? "已登录：" + who.login : "未登录";
-    if (ok) loadRemote();
-    else setStatus("用 GitHub 登录之后才能读写仓库。", "");
+    if (ok) {
+      loadRemote();
+    } else {
+      setStatus("用 GitHub 登录之后才能读写仓库。", "");
+      if (gateMsg) {
+        gateMsg.textContent = who && who.reason && who.reason !== "none"
+          ? "上次的登录没认出来（" + who.reason + "），重新点一次。"
+          : "";
+      }
+    }
   });
 
   var CFG_KEY = "bxz-admin-cfg";
@@ -899,9 +1076,145 @@
     return renderBody(s);
   }
 
+  var RAW_BASE = "https://raw.githubusercontent.com/BX-ZERO/Personal-website/main/";
+  var failedImgs = new WeakSet();
+
+  /* 正文里存的是相对路径 media/xxx.jpg，线上直接能用；
+     本地预览时相对路径是 404，自动退回仓库原始地址。不改 DOM 属性，保存出去仍然干净。 */
+  document.addEventListener("error", function (e) {
+    var img = e.target;
+    if (!img || img.tagName !== "IMG" || failedImgs.has(img)) return;
+    var src = img.getAttribute("src") || "";
+    if (!/^media\//.test(src)) return;
+    failedImgs.add(img);
+    img.src = RAW_BASE + src;
+  }, true);
+
+  /* 编辑区显示标签，保存与预览时才还原成 img */
+  var attachments = [];
+  var attsBox = document.getElementById("atts");
+  var attRaw = {};
+
+  function rawOf(src) {
+    if (/^https?:/i.test(src)) return src;
+    return RAW_BASE + src;
+  }
+
+  function renderAtts() {
+    if (!attsBox) return;
+    if (!attachments.length) {
+      attsBox.innerHTML = "";
+      return;
+    }
+    attsBox.innerHTML = attachments.map(function (a, i) {
+      return '<div class="att" data-i="' + i + '">' +
+        '<img class="att-thumb" src="' + rawOf(a.src) + '" alt="">' +
+        '<div class="att-foot">' +
+        '<span class="att-name" title="' + (a.name || "") + '">' + (i + 1) + ". " + (a.name || "") + "</span>" +
+        '<button class="att-btn" type="button" data-att="ins" title="插到光标处">插</button>' +
+        '<button class="att-btn" type="button" data-att="up" title="上移">↑</button>' +
+        '<button class="att-btn" type="button" data-att="down" title="下移">↓</button>' +
+        '<button class="att-btn del" type="button" data-att="del" title="删除">×</button>' +
+        "</div></div>";
+    }).join("");
+  }
+
+  function toChip(src, name) {
+    var chip = document.createElement("span");
+    chip.className = "img-chip";
+    chip.setAttribute("contenteditable", "false");
+    chip.setAttribute("data-src", src || "");
+    chip.setAttribute("data-name", name || "");
+    chip.textContent = "图片 " + (name || "");
+    return chip;
+  }
+
+  /* 只把「正文末尾连续的图片」收成附件，中间的图留作可拖动的标签 */
+  function splitImages(html) {
+    var holder = document.createElement("div");
+    holder.innerHTML = html;
+    var picked = [];
+    while (holder.lastElementChild) {
+      var last = holder.lastElementChild;
+      var found = last.tagName === "IMG"
+        ? [last]
+        : (last.textContent.trim() ? [] : Array.prototype.slice.call(last.querySelectorAll("img")));
+      if (!found.length) break;
+      found.reverse().forEach(function (img) {
+        var src = img.getAttribute("src") || "";
+        picked.unshift({ src: src, name: img.getAttribute("alt") || src.split("/").pop() });
+      });
+      last.remove();
+    }
+    Array.prototype.slice.call(holder.querySelectorAll("img")).forEach(function (img) {
+      var src = img.getAttribute("src") || "";
+      img.replaceWith(toChip(src, img.getAttribute("alt") || src.split("/").pop()));
+    });
+    return { html: holder.innerHTML, images: picked };
+  }
+
+  function readBodyHtml() {
+    var clone = els.body.cloneNode(true);
+    clone.querySelectorAll(".img-chip").forEach(function (chip) {
+      var img = document.createElement("img");
+      img.setAttribute("src", chip.getAttribute("data-src") || "");
+      img.setAttribute("alt", chip.getAttribute("data-name") || "");
+      chip.replaceWith(img);
+    });
+    var imgs = attachments.map(function (a) {
+      return '<img src="' + a.src + '" alt="' + (a.name || "").replace(/"/g, "") + '">';
+    }).join("");
+    return clone.innerHTML + imgs;
+  }
+
+  /* 把某张附件插到光标处，之后它就算正文的一部分 */
+  function insertAttachment(i) {
+    var a = attachments[i];
+    if (!a) return;
+    els.body.focus();
+    restoreRange();
+    var holder = document.createElement("span");
+    holder.appendChild(toChip(a.src, a.name));
+    document.execCommand("insertHTML", false, holder.innerHTML + "&nbsp;");
+    rememberRange();
+    attachments.splice(i, 1);
+    renderAtts();
+    renderPreview();
+    writeDraft(true);
+    setStatus("图片放到光标处了", "ok");
+  }
+
+  if (attsBox) {
+    attsBox.addEventListener("click", function (e) {
+      var btn = e.target.closest("[data-att]");
+      if (!btn) return;
+      var host = e.target.closest(".att");
+      var i = parseInt(host.dataset.i, 10);
+      if (isNaN(i) || !attachments[i]) return;
+      var action = btn.dataset.att;
+      if (action === "ins") {
+        insertAttachment(i);
+        return;
+      }
+      if (action === "del") {
+        attachments.splice(i, 1);
+      } else if (action === "up" && i > 0) {
+        var tmp = attachments[i - 1];
+        attachments[i - 1] = attachments[i];
+        attachments[i] = tmp;
+      } else if (action === "down" && i < attachments.length - 1) {
+        var tmp2 = attachments[i + 1];
+        attachments[i + 1] = attachments[i];
+        attachments[i] = tmp2;
+      }
+      renderAtts();
+      renderPreview();
+    });
+  }
+
   function renderPreview() {
     var t = els.title.value.trim();
-    var html = bodyToHtml(els.body.innerHTML);
+    var html = bodyToHtml(readBodyHtml());
     var inner = "<h1>" + inline(t || "（无标题）") + "</h1>" +
       (html || '<p style="color:var(--dimmer)">正文还是空的。</p>');
     els.preview.innerHTML = '<div class="article">' + inner + "</div>" +
@@ -915,7 +1228,10 @@
   function fillForm(item) {
     els.date.value = item ? (item.date || "") : new Date().toISOString().slice(0, 10);
     els.title.value = item ? (item.title || "") : "";
-    els.body.innerHTML = item ? bodyToHtml(item.body) : "";
+    var split = item ? splitImages(bodyToHtml(item.body)) : { html: "", images: [] };
+    els.body.innerHTML = split.html;
+    attachments = split.images;
+    renderAtts();
     renderPreview();
   }
 
@@ -923,7 +1239,7 @@
     return {
       date: els.date.value || new Date().toISOString().slice(0, 10),
       title: els.title.value.trim(),
-      body: els.body.innerHTML
+      body: readBodyHtml()
     };
   }
 
@@ -990,6 +1306,7 @@
     }
     renderList();
     putRemote(list, "更新动态");
+    dropDraft();
   }
 
   function deleteAt(index) {
@@ -1153,7 +1470,11 @@
     }
 
     var clearBtn = document.getElementById("rt-clear");
-    if (clearBtn) {
+  var draftBtn = document.getElementById("rt-draft");
+  if (draftBtn) {
+    draftBtn.addEventListener("click", function () { writeDraft(false); });
+  }
+  if (clearBtn) {
       clearBtn.addEventListener("click", function () { exec("removeFormat"); });
     }
 
@@ -1226,15 +1547,10 @@
         var name = "media/" + Date.now() + "-" + Math.random().toString(36).slice(2, 7) + "." + ext;
         return window.BXAuth.upload(name, base64).then(function (res) {
           var path = (res && res.path) || name;
-          els.body.focus();
-          restoreRange();
-          document.execCommand(
-            "insertHTML",
-            false,
-            '<img src="' + path + '" alt="' + safe + '" title="' + safe + '">'
-          );
-          rememberRange();
-          noteFile(label + " 已插入", "is-done");
+          attachments.push({ src: path, name: label });
+          renderAtts();
+          renderPreview();
+          noteFile(label + " 已加进附件", "is-done");
         });
       }).catch(function (err) {
         noteFile(label + " 上传失败", "is-err");
@@ -1271,18 +1587,78 @@
 
     previewBox.addEventListener("mouseleave", function () {
       clearTimeout(hoverTimer);
-      closeTimer = setTimeout(closeFloat, 420);
+      closeTimer = setTimeout(closeFloat, 180);
     });
 
-    floatBox.addEventListener("mouseenter", function () { clearTimeout(closeTimer); });
-    floatBox.addEventListener("mouseleave", function () { closeFloat(); });
+    var floatSheet = floatBox.querySelector(".float-sheet");
+    if (floatSheet) {
+      floatSheet.addEventListener("mouseenter", function () { clearTimeout(closeTimer); });
+      floatSheet.addEventListener("mouseleave", function () { closeFloat(); });
+    }
   }
+
+  /* ---------- 草稿（本机） ---------- */
+
+  var DRAFT_KEY = "bxz-draft";
+  var draftTimer = null;
+
+  function writeDraft(quiet) {
+    clearTimeout(draftTimer);
+    draftTimer = setTimeout(function () {
+      try {
+        localStorage.setItem(DRAFT_KEY, JSON.stringify({
+          date: els.date.value,
+          title: els.title.value,
+          body: els.body.innerHTML,
+          atts: attachments,
+          at: Date.now()
+        }));
+        if (!quiet) setStatus("草稿已存在本机", "ok");
+      } catch (e) {
+        if (!quiet) setStatus("草稿存不下（浏览器不让写本地）", "err");
+      }
+    }, quiet ? 500 : 0);
+  }
+
+  function readDraft() {
+    try {
+      var raw = localStorage.getItem(DRAFT_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function dropDraft() {
+    try { localStorage.removeItem(DRAFT_KEY); } catch (e) { /* 忽略 */ }
+  }
+
+  function restoreDraft() {
+    var d = readDraft();
+    if (!d) return false;
+    if (!d.title && !d.body && !(d.atts && d.atts.length)) return false;
+    els.date.value = d.date || els.date.value;
+    els.title.value = d.title || "";
+    els.body.innerHTML = d.body || "";
+    attachments = Array.isArray(d.atts) ? d.atts : [];
+    renderAtts();
+    renderPreview();
+    setStatus("已恢复上次没保存的草稿", "ok");
+    return true;
+  }
+
+  ["input", "keyup", "paste"].forEach(function (evt) {
+    els.title.addEventListener(evt, function () { writeDraft(true); });
+    els.body.addEventListener(evt, function () { writeDraft(true); });
+  });
+  els.date.addEventListener("change", function () { writeDraft(true); });
 
   /* ---------- 启动 ---------- */
 
   loadCfg();
   fillForm(null);
   renderList();
+  restoreDraft();
 })();
 </script>
 <script>
