@@ -434,6 +434,7 @@
   function tryUnlock() {
     if (gateInput.value === PASS) {
       try { sessionStorage.setItem(UNLOCK_KEY, "1"); } catch (e) {}
+      try { localStorage.setItem("bxz-owner", "1"); } catch (e) {}
       gateMsg.textContent = "";
       openGate(true);
     } else {
