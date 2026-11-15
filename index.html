@@ -7,7 +7,7 @@
 <link rel="icon" href="img/bx-icon.ico" sizes="any">
 <link rel="icon" type="image/png" href="img/bx-icon.png">
 <link rel="apple-touch-icon" href="img/bx-icon.png">
-<link rel="stylesheet" href="styles.css?v=20261116p">
+<link rel="stylesheet" href="styles.css?v=20261116t">
 </head>
 <body>
 
@@ -103,7 +103,7 @@
       <div class="slab-head">
         <h2 id="slab-home"><span class="en">INFORMATION</span><span class="cn">情报</span></h2>
         <span class="slab-line"></span>
-        <a class="edit-link" id="edit-home" href="home-edit.html" hidden>EDIT</a>
+        <a class="edit-link" id="edit-home" href="#/home-edit" data-view="home-edit" hidden>EDIT</a>
       </div>
 
       <div class="info">
@@ -125,7 +125,7 @@
       <div class="slab-head">
         <h2><span class="en">MOMENTS</span><span class="cn">动态</span></h2>
         <span class="slab-line"></span>
-        <a class="edit-link" id="edit-entry" href="edit.html" hidden>EDIT</a>
+        <a class="edit-link" id="edit-entry" href="#/write" data-view="write" hidden>EDIT</a>
       </div>
 
       <ol class="moments" id="moments-list">
@@ -167,6 +167,251 @@
   </section>
 
   <!-- ================= 动态详情 ================= -->
+  <section class="view" id="view-write">
+<!-- 口令门：没密码就进不了编辑界面 -->
+<div class="gate" id="gate">
+  <div class="gate-box">
+    <h2>RESTRICTED</h2>
+    <p>请输入密钥</p>
+    <div class="pw">
+      <input type="password" id="gate-input" autocomplete="current-password" placeholder="密钥">
+      <button class="pw-eye" id="gate-eye" type="button" aria-label="显示密码" aria-pressed="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M1.8 12S5.4 5.6 12 5.6 22.2 12 22.2 12 18.6 18.4 12 18.4 1.8 12 1.8 12Z"/>
+          <circle cx="12" cy="12" r="2.9"/>
+          <path class="pw-slash" d="M4.2 19.8 19.8 4.2"/>
+        </svg>
+      </button>
+    </div>
+    <button class="btn primary" id="gate-ok" type="button">进入</button>
+    <p class="gate-msg" id="gate-msg"></p>
+  </div>
+</div>
+
+    <div class="admin">
+  <h1>写作台</h1>
+  <p class="sub">MOMENTS · 写完保存，一分钟左右站点会自己更新</p>
+
+  <!-- 连接设置：收进按钮 -->
+  <div class="conn-bar">
+    <button class="btn" id="conn-toggle" type="button" aria-expanded="false">仓库设置</button>
+    <span class="conn-who" id="auth-state">正在确认…</span>
+  </div>
+
+  <section class="pane conn" id="conn-pane" hidden>
+    <div class="pane-head">
+      <h2>CONNECTION</h2><span class="cn">仓库设置</span>
+      <span class="fill"></span>
+      <button class="btn" id="save-cfg" type="button">记下设置</button>
+    </div>
+
+    <div class="settings-grid">
+      <div class="field">
+        <label for="cfg-owner">账号</label>
+        <input type="text" id="cfg-owner" placeholder="BX-ZERO" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="cfg-repo">仓库</label>
+        <input type="text" id="cfg-repo" placeholder="Personal-website" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="cfg-branch">分支</label>
+        <input type="text" id="cfg-branch" placeholder="main" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>登录状态</label>
+        <div id="auth-state2" style="font-size:12.5px;opacity:.75;padding:9px 0;">正在确认…</div>
+      </div>
+    </div>
+
+    <p class="hint">
+      读取走公开接口，写入由 Worker 代为提交，仓库令牌不进浏览器。
+      登录票据存在这台电脑的浏览器里，三十天后失效。
+    </p>
+  </section>
+
+  <!-- 编辑区：整宽 -->
+  <section class="pane editor">
+    <div class="pane-head">
+      <h2>EDITOR</h2><span class="cn">写这一条</span>
+      <span class="fill"></span>
+      <button class="btn" id="new-entry" type="button">新建</button>
+    </div>
+
+    <div class="two">
+      <div class="field">
+        <label for="f-date">日期</label>
+        <input type="date" id="f-date">
+      </div>
+      <div class="field">
+        <label for="f-title">标题</label>
+        <input type="text" id="f-title" placeholder="一句话标题" autocomplete="off">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>正文</label>
+      <div class="rt">
+        <div class="rt-toolbar" id="rt-toolbar">
+          <select class="rt-select" data-block>
+            <option value="p">正文</option>
+            <option value="h2">大标题</option>
+            <option value="h3">小标题</option>
+            <option value="blockquote">引用</option>
+            <option value="pre">代码块</option>
+          </select>
+          <select class="rt-select" data-size>
+            <option value="">字号</option>
+            <option value="12px">12</option>
+            <option value="14px">14</option>
+            <option value="16px">16</option>
+            <option value="18px">18</option>
+            <option value="22px">22</option>
+            <option value="28px">28</option>
+          </select>
+          <span class="rt-sep"></span>
+          <button type="button" data-cmd="bold" title="加粗"><b>B</b></button>
+          <button type="button" data-cmd="italic" title="倾斜"><i>I</i></button>
+          <button type="button" data-cmd="underline" title="下划线"><u>U</u></button>
+          <button type="button" data-cmd="strikeThrough" title="删除线"><s>S</s></button>
+          <input type="color" class="rt-color" id="rt-color" value="#35d8ff" title="文字颜色">
+          <span class="rt-sep"></span>
+          <button type="button" data-cmd="justifyLeft" title="左对齐">左</button>
+          <button type="button" data-cmd="justifyCenter" title="居中">中</button>
+          <button type="button" data-cmd="justifyRight" title="右对齐">右</button>
+          <span class="rt-sep"></span>
+          <button type="button" data-cmd="insertUnorderedList" title="无序列表">•</button>
+          <button type="button" data-cmd="insertOrderedList" title="有序列表">1.</button>
+          <button type="button" id="rt-link" title="插入链接">链接</button>
+          <button type="button" id="rt-img" title="插入图片">图片</button>
+          <button type="button" id="rt-hr" title="分隔线">分隔</button>
+          <button type="button" id="rt-clear" title="清除格式">清</button>
+          <span class="rt-sep"></span>
+          <button type="button" id="rt-draft" title="把当前内容存在本机">存草稿</button>
+          <span class="rt-sep"></span>
+          <input class="rt-file" id="rt-file-name" type="text" readonly placeholder="还没有插图" title="最近插入的图片">
+        </div>
+        <div class="rt-body" id="f-body" contenteditable="true"></div>
+        <div class="atts" id="atts"></div>
+      </div>
+      <input type="file" id="img-file" accept="image/*" multiple hidden>
+    </div>
+
+    <div class="row">
+      <button class="btn primary" id="btn-save" type="button">保存到仓库</button>
+      <button class="btn danger" id="btn-del" type="button">删除这一条</button>
+      <button class="btn" id="btn-reload" type="button">从仓库重读</button>
+      <button class="btn" id="btn-sweep" type="button">清理未引用图片</button>
+      <span class="status" id="status"></span>
+    </div>
+  </section>
+
+  <div class="grid2">
+    <section class="pane">
+      <div class="pane-head">
+        <h2>ENTRIES</h2><span class="cn">已有的</span>
+        <span class="fill"></span>
+        <span class="cn" id="count"></span>
+      </div>
+
+      <ul class="entries" id="entries"></ul>
+    </section>
+
+    <section class="pane">
+      <div class="pane-head">
+        <h2>PREVIEW</h2><span class="cn">效果</span>
+      </div>
+      <div class="preview" id="preview">
+        <div class="moment-body">
+          <p style="color:var(--dimmer)">左边写点什么，这里会跟着变。</p>
+        </div>
+      </div>
+    </section>
+  </div>
+    </div>
+  </section>
+
+  <section class="view" id="view-home-edit">
+  <h1>主页信息</h1>
+  <p class="sub">INFORMATION · 改完保存，一分钟左右站点会自己更新</p>
+
+  <div class="gate" id="he-gate">
+    <p>请输入密钥</p>
+    <div class="pw" style="max-width:280px;margin:0 auto 14px;">
+      <input id="pass" type="password" autocomplete="current-password" placeholder="密钥">
+      <button class="pw-eye" id="pass-eye" type="button" aria-label="显示密码" aria-pressed="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M1.8 12S5.4 5.6 12 5.6 22.2 12 22.2 12 18.6 18.4 12 18.4 1.8 12 1.8 12Z"/>
+          <circle cx="12" cy="12" r="2.9"/>
+          <path class="pw-slash" d="M4.2 19.8 19.8 4.2"/>
+        </svg>
+      </button>
+    </div>
+    <button class="btn primary" id="sign-in" type="button">进入</button>
+    <p class="status" id="he-gate-msg"></p>
+  </div>
+
+  <div id="form" hidden>
+
+    <nav class="tabs" id="tabs">
+      <button class="tab is-on" type="button" data-tab="basic">区块标题</button>
+      <button class="tab" type="button" data-tab="tools">工具箱</button>
+      <button class="tab" type="button" data-tab="music">背景音乐</button>
+      <button class="tab" type="button" data-tab="entries">手写条目</button>
+      <span class="tab-ink" id="tab-ink"></span>
+    </nav>
+
+    <section class="pane is-on" data-pane="basic">
+      <div class="pane-head"><h2>BASIC</h2><span class="cn">区块标题</span></div>
+      <div class="pane-body"><div class="pane-inner">
+        <div class="two">
+          <label class="f"><span>首页区块英文</span><input id="f-slab-home-en" type="text" placeholder="INFORMATION"></label>
+          <label class="f"><span>首页区块中文</span><input id="f-slab-home-cn" type="text" placeholder="情报"></label>
+        </div>
+        <div class="two">
+          <label class="f"><span>工具区块英文</span><input id="f-slab-tools-en" type="text" placeholder="AVAILABLE"></label>
+          <label class="f"><span>工具区块中文</span><input id="f-slab-tools-cn" type="text" placeholder="可用"></label>
+        </div>
+      </div></div>
+    </section>
+
+    <section class="pane" data-pane="tools">
+      <div class="pane-head"><h2>TOOLS</h2><span class="cn">工具箱</span><span class="fill"></span>
+        <button class="btn mini" id="add-tool" type="button">加一个工具</button>
+      </div>
+      <div class="pane-body"><div class="pane-inner"><div id="tools"></div></div></div>
+    </section>
+
+    <section class="pane" data-pane="music">
+      <div class="pane-head"><h2>MUSIC</h2><span class="cn">背景音乐（访客只能开关音量）</span><span class="fill"></span>
+        <button class="btn mini" id="pick-audio" type="button">上传音频</button>
+        <button class="btn mini" id="add-track" type="button">加一首</button>
+      </div>
+      <div class="pane-body"><div class="pane-inner">
+        <input id="audio-file" type="file" accept="audio/*" multiple hidden>
+        <label class="f"><span>音量 0 – 1</span>
+          <input id="f-volume" type="number" min="0" max="1" step="0.05">
+        </label>
+        <div id="tracks"></div>
+      </div></div>
+    </section>
+
+    <section class="pane" data-pane="entries">
+      <div class="pane-head"><h2>ENTRIES</h2><span class="cn">手写条目（动态会自动并进来）</span><span class="fill"></span>
+        <button class="btn mini" id="add-entry" type="button">加一条</button>
+      </div>
+      <div class="pane-body"><div class="pane-inner"><div id="he-entries"></div></div></div>
+    </section>
+
+    <div class="row">
+      <button class="btn primary" id="save" type="button">保存到仓库</button>
+      <button class="btn" id="reload" type="button">从仓库重读</button>
+      <span class="status" id="he-status"></span>
+    </div>
+
+  </div>
+  </section>
+
   <section class="view" id="view-post">
 
     <article class="post-wrap">
@@ -184,9 +429,1334 @@
   <span class="ver">v1.0.1</span>
 </footer>
 
-<script src="home.js?v=20261116p"></script>
-<script src="moments.js?v=20261116p"></script>
-<script src="auth.js?v=20261116p"></script>
-<script src="main.js?v=20261116p"></script>
+<script src="home.js?v=20261116t"></script>
+<script src="moments.js?v=20261116t"></script>
+<script src="auth.js?v=20261116t"></script>
+<script src="main.js?v=20261116t"></script>
+<script>
+(function () {
+  "use strict";
+
+  var DATA_PATH = "home.js";
+
+  var gate = document.getElementById("he-gate");
+  var formBox = document.getElementById("form");
+  var statusBox = document.getElementById("he-status");
+
+  var state = clone(window.BX_HOME || {});
+
+  function clone(o) {
+    return JSON.parse(JSON.stringify(o || {}));
+  }
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+    });
+  }
+
+  function setStatus(text, kind) {
+    statusBox.textContent = text || "";
+    statusBox.className = "status" + (kind ? " " + kind : "");
+  }
+
+  /* ---------- 渲染 ---------- */
+
+  var fSlabHomeEn = document.getElementById("f-slab-home-en");
+  var fSlabHomeCn = document.getElementById("f-slab-home-cn");
+  var fSlabToolsEn = document.getElementById("f-slab-tools-en");
+  var fSlabToolsCn = document.getElementById("f-slab-tools-cn");
+
+  function slabOf() {
+    if (!state.slab || typeof state.slab !== "object") state.slab = {};
+    if (!state.slab.home) state.slab.home = { en: "INFORMATION", cn: "情报" };
+    if (!state.slab.tools) state.slab.tools = { en: "AVAILABLE", cn: "可用" };
+    return state.slab;
+  }
+
+  function bindSlab(input, which, field) {
+    input.addEventListener("input", function () {
+      slabOf()[which][field] = input.value;
+    });
+  }
+
+  bindSlab(fSlabHomeEn, "home", "en");
+  bindSlab(fSlabHomeCn, "home", "cn");
+  bindSlab(fSlabToolsEn, "tools", "en");
+  bindSlab(fSlabToolsCn, "tools", "cn");
+  var toolsBox = document.getElementById("tools");
+  var entriesBox = document.getElementById("he-entries");
+  var tracksBox = document.getElementById("tracks");
+  var fVolume = document.getElementById("f-volume");
+
+  function musicOf() {
+    if (!state.music || typeof state.music !== "object") state.music = { volume: 0.35, tracks: [] };
+    if (!Array.isArray(state.music.tracks)) state.music.tracks = [];
+    return state.music;
+  }
+
+  function renderTracks() {
+    var m = musicOf();
+    tracksBox.innerHTML = m.tracks.map(function (t, i) {
+      return '<div class="card" data-i="' + i + '">' +
+        '<div class="two">' +
+        '<label class="f"><span>曲名</span><input data-k="title" type="text" value="' + esc(t.title) + '"></label>' +
+        '<label class="f"><span>文件路径</span><input data-k="src" type="text" placeholder="music/xxx.mp3" value="' + esc(t.src) + '"></label>' +
+        "</div>" +
+        '<div class="acts">' +
+        '<button class="btn mini" data-act="up" type="button">上移</button>' +
+        '<button class="btn mini" data-act="down" type="button">下移</button>' +
+        '<button class="btn mini danger" data-act="del" type="button">删除</button>' +
+        "</div></div>";
+    }).join("") || '<p class="status">还没有曲目。</p>';
+  }
+
+  function renderTools() {
+    var rows = state.tools || [];
+    toolsBox.innerHTML = rows.map(function (t, i) {
+      return '<div class="card" data-i="' + i + '">' +
+        '<div class="two">' +
+        '<label class="f"><span>中文名</span><input data-k="cn" type="text" value="' + esc(t.cn) + '"></label>' +
+        '<label class="f"><span>仓库名 / 代号</span><input data-k="en" type="text" value="' + esc(t.en) + '"></label>' +
+        "</div>" +
+        '<label class="f"><span>链接</span><input data-k="href" type="text" value="' + esc(t.href) + '"></label>' +
+        '<div class="two">' +
+        '<label class="f"><span>标签</span><input data-k="tag" type="text" value="' + esc(t.tag) + '"></label>' +
+        '<label class="f"><span>说明</span><input data-k="desc" type="text" value="' + esc(t.desc) + '"></label>' +
+        "</div>" +
+        '<div class="acts">' +
+        '<button class="btn mini" data-act="up" type="button">上移</button>' +
+        '<button class="btn mini" data-act="down" type="button">下移</button>' +
+        '<button class="btn mini danger" data-act="del" type="button">删除</button>' +
+        "</div></div>";
+    }).join("") || '<p class="status">还没有工具。</p>';
+  }
+
+  function renderEntries() {
+    var rows = state.entries || [];
+    entriesBox.innerHTML = rows.map(function (e, i) {
+      return '<div class="card" data-i="' + i + '">' +
+        '<div class="two">' +
+        '<label class="f"><span>日期</span><input data-k="date" type="date" value="' + esc(e.date) + '"></label>' +
+        '<label class="f"><span>标题</span><input data-k="title" type="text" value="' + esc(e.title) + '"></label>' +
+        "</div>" +
+        '<div class="two">' +
+        '<label class="f"><span>类型</span><select data-k="kind">' +
+        '<option value="note"' + (e.kind === "note" ? " selected" : "") + ">随笔</option>" +
+        '<option value="tool"' + (e.kind === "tool" ? " selected" : "") + ">工具</option>" +
+        "</select></label>" +
+        '<label class="f"><span>链接（可空）</span><input data-k="href" type="text" value="' + esc(e.href) + '"></label>' +
+        "</div>" +
+        '<label class="f"><span>描述</span><textarea data-k="desc" rows="2">' + esc(e.desc) + "</textarea></label>" +
+        '<div class="acts">' +
+        '<button class="btn mini" data-act="up" type="button">上移</button>' +
+        '<button class="btn mini" data-act="down" type="button">下移</button>' +
+        '<button class="btn mini danger" data-act="del" type="button">删除</button>' +
+        "</div></div>";
+    }).join("") || '<p class="status">还没有手写条目。</p>';
+  }
+
+  function renderAll() {
+    var sl = slabOf();
+    fSlabHomeEn.value = sl.home.en || "";
+    fSlabHomeCn.value = sl.home.cn || "";
+    fSlabToolsEn.value = sl.tools.en || "";
+    fSlabToolsCn.value = sl.tools.cn || "";
+    fVolume.value = typeof musicOf().volume === "number" ? musicOf().volume : 0.35;
+    renderTools();
+    renderTracks();
+    renderEntries();
+  }
+
+  /* ---------- 编辑 ---------- */
+
+  function bindList(box, getList, rerender) {
+    box.addEventListener("input", function (e) {
+      var field = e.target.closest("[data-k]");
+      var card = e.target.closest(".card");
+      if (!field || !card) return;
+      var i = Number(card.dataset.i);
+      var list = getList();
+      if (!list[i]) return;
+      list[i][field.dataset.k] = field.value;
+    });
+
+    box.addEventListener("change", function (e) {
+      var field = e.target.closest("[data-k]");
+      var card = e.target.closest(".card");
+      if (!field || !card) return;
+      var i = Number(card.dataset.i);
+      var list = getList();
+      if (!list[i]) return;
+      list[i][field.dataset.k] = field.value;
+    });
+
+    box.addEventListener("click", function (e) {
+      var btn = e.target.closest("[data-act]");
+      if (!btn) return;
+      var card = e.target.closest(".card");
+      if (!card) return;
+      var i = Number(card.dataset.i);
+      var list = getList();
+      var act = btn.dataset.act;
+      if (act === "del") {
+        list.splice(i, 1);
+      } else if (act === "up" && i > 0) {
+        var tmp = list[i - 1];
+        list[i - 1] = list[i];
+        list[i] = tmp;
+      } else if (act === "down" && i < list.length - 1) {
+        var tmp2 = list[i + 1];
+        list[i + 1] = list[i];
+        list[i] = tmp2;
+      }
+      rerender();
+    });
+  }
+
+  bindList(toolsBox, function () { return state.tools || (state.tools = []); }, renderTools);
+  bindList(entriesBox, function () { return state.entries || (state.entries = []); }, renderEntries);
+  bindList(tracksBox, function () { return musicOf().tracks; }, renderTracks);
+
+  fVolume.addEventListener("input", function () {
+    var v = parseFloat(fVolume.value);
+    musicOf().volume = isNaN(v) ? 0.35 : Math.max(0, Math.min(1, v));
+  });
+
+  document.getElementById("add-track").addEventListener("click", function () {
+    musicOf().tracks.push({ title: "新曲目", src: "music/" });
+    renderTracks();
+  });
+
+  /* 上传本地音频：先传到仓库 music/ 目录，再自动填进曲目 */
+
+  var pickAudio = document.getElementById("pick-audio");
+  var audioFile = document.getElementById("audio-file");
+
+  function readBase64(file) {
+    return new Promise(function (res, rej) {
+      var fr = new FileReader();
+      fr.onload = function () { res(String(fr.result).split(",")[1] || ""); };
+      fr.onerror = function () { rej(new Error("读不到这个文件")); };
+      fr.readAsDataURL(file);
+    });
+  }
+
+  function audioPath(file) {
+    var m = /\.([A-Za-z0-9]+)$/.exec(file.name || "");
+    var ext = m ? m[1].toLowerCase() : "mp3";
+    return "music/" + Date.now() + "-" + Math.random().toString(36).slice(2, 8) + "." + ext;
+  }
+
+  async function sendAudio(files) {
+    if (!files || !files.length) return;
+    for (var i = 0; i < files.length; i++) {
+      var file = files[i];
+      setStatus("上传中 " + (i + 1) + " / " + files.length + "：" + file.name);
+      try {
+        var path = audioPath(file);
+        var b64 = await readBase64(file);
+        await window.BXAuth.upload(path, b64, "上传音乐");
+        musicOf().tracks.push({ title: (file.name || "曲目").replace(/\.[^.]+$/, ""), src: path });
+        renderTracks();
+      } catch (e) {
+        setStatus("上传失败：" + (e && e.message ? e.message : e), "bad");
+        return;
+      }
+    }
+    setStatus("音频已传进仓库，点「保存到仓库」之后曲目才会生效。", "ok");
+  }
+
+  pickAudio.addEventListener("click", function () {
+    audioFile.click();
+  });
+
+  audioFile.addEventListener("change", function () {
+    var files = [].slice.call(audioFile.files || []);
+    audioFile.value = "";
+    sendAudio(files);
+  });
+
+  document.getElementById("add-tool").addEventListener("click", function () {
+    state.tools = state.tools || [];
+    state.tools.push({ cn: "新工具", en: "repo-name", desc: "一句话说明。", href: "", tag: "TOOL" });
+    renderTools();
+  });
+
+  document.getElementById("add-entry").addEventListener("click", function () {
+    state.entries = state.entries || [];
+    state.entries.push({
+      date: new Date().toISOString().slice(0, 10),
+      kind: "note",
+      title: "新条目",
+      desc: "",
+      href: ""
+    });
+    renderEntries();
+  });
+
+  /* ---------- 读写仓库 ---------- */
+
+  var HEADER = [
+    "/* ==========================================================",
+    "   首页信息",
+    "   这个文件可以直接手改，也可以用 在首页的主页信息编辑里改后保存",
+    "",
+    "   entries 里是手写的条目（工具上线、杂事），动态会从 moments.js 自动并进来。",
+    "   kind 取值：post（动态，自动的） / tool（工具） / note（随手记）",
+    "   ========================================================== */",
+    "",
+    ""
+  ].join("\n");
+
+  function toFileText(d) {
+    return HEADER + "window.BX_HOME = " + JSON.stringify(d, null, 2) + ";\n";
+  }
+
+  function parseFileText(text) {
+    var m = String(text).match(/window\.BX_HOME\s*=\s*([\s\S]*?);?\s*$/);
+    if (!m) return null;
+    try {
+      return JSON.parse(m[1]);
+    } catch (e) {
+      try {
+        return new Function("return (" + m[1] + ");")();
+      } catch (e2) {
+        return null;
+      }
+    }
+  }
+
+  function loadRemote() {
+    if (!window.BXAuth) return;
+    setStatus("正在读仓库…");
+    window.BXAuth.read(DATA_PATH).then(function (res) {
+      var parsed = parseFileText(res.text || "");
+      if (parsed) {
+        state = parsed;
+        renderAll();
+        setStatus("已从仓库读到最新版本", "ok");
+      } else {
+        setStatus("仓库里的文件没解析出来，先用页面上的内容", "err");
+      }
+    }).catch(function (e) {
+      setStatus("读取失败：" + e.message, "err");
+    });
+  }
+
+  function doSave() {
+    if (!window.BXAuth) {
+      setStatus("登录之后才能保存", "err");
+      return;
+    }
+    setStatus("正在提交…");
+    window.BXAuth.save(DATA_PATH, toFileText(state), "更新主页信息").then(function () {
+      setStatus("已提交。Pages 一般一分钟内重建完，稍等刷新站点。", "ok");
+      sweepOrphans();
+    }).catch(function (e) {
+      setStatus("提交失败：" + e.message, "err");
+    });
+  }
+
+  /* 提交完顺手清掉没人引用的旧图，失败不打扰 */
+  function sweepOrphans() {
+    if (!window.BXAuth || !window.BXAuth.cleanup) return;
+    window.BXAuth.cleanup({ minAgeHours: 24 }).then(function (res) {
+      var n = (res.deleted || []).length;
+      if (n > 0) setStatus("已提交，顺手清掉了 " + n + " 张没人引用的旧图。", "ok");
+    }).catch(function () {});
+  }
+
+  document.getElementById("save").addEventListener("click", doSave);
+  document.getElementById("reload").addEventListener("click", loadRemote);
+  document.getElementById("sign-in").addEventListener("click", function () {
+    var input = document.getElementById("pass");
+    var msg = document.getElementById("he-gate-msg");
+    var pw = (input && input.value ? input.value : "").trim();
+    if (!window.BXAuth) { msg.textContent = "auth.js 没加载。"; return; }
+    if (!pw) { msg.textContent = "先填密钥。"; return; }
+    msg.textContent = "正在核对…";
+    window.BXAuth.loginWithPassword(pw).then(function () {
+      location.reload();
+    }).catch(function (e) {
+      msg.textContent = e && e.message ? e.message : "密码不对";
+      if (input) input.select();
+    });
+  });
+
+  var passInput = document.getElementById("pass");
+  if (passInput) {
+    passInput.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") document.getElementById("sign-in").click();
+    });
+  }
+
+  /* 小眼睛：点一下在掩码与明文之间切换 */
+  (function bindEye() {
+    var eye = document.getElementById("pass-eye");
+    if (!passInput || !eye) return;
+    eye.addEventListener("click", function () {
+      var show = passInput.type === "password";
+      passInput.type = show ? "text" : "password";
+      eye.classList.toggle("is-on", show);
+      eye.setAttribute("aria-pressed", show ? "true" : "false");
+      eye.setAttribute("aria-label", show ? "隐藏密码" : "显示密码");
+      passInput.focus();
+    });
+  })();
+
+  /* ---------- 顶部分页与折叠 ---------- */
+
+  var tabsBox = document.getElementById("tabs");
+  var tabInk = document.getElementById("tab-ink");
+  var panes = Array.prototype.slice.call(document.querySelectorAll("[data-pane]"));
+
+  function moveInk(tab) {
+    if (!tab || !tabInk) return;
+    tabInk.style.left = tab.offsetLeft + "px";
+    tabInk.style.width = tab.offsetWidth + "px";
+  }
+
+  function pickTab(name) {
+    if (!tabsBox) return;
+    Array.prototype.forEach.call(tabsBox.querySelectorAll(".tab"), function (b) {
+      b.classList.toggle("is-on", b.dataset.tab === name);
+    });
+    panes.forEach(function (p) {
+      p.classList.toggle("is-on", p.dataset.pane === name);
+    });
+    moveInk(tabsBox.querySelector(".tab.is-on"));
+  }
+
+  if (tabsBox) {
+    tabsBox.addEventListener("click", function (e) {
+      var tab = e.target.closest("[data-tab]");
+      if (tab) pickTab(tab.dataset.tab);
+    });
+  }
+
+  panes.forEach(function (p) {
+    var head = p.querySelector(".pane-head");
+    if (!head) return;
+    head.addEventListener("click", function (e) {
+      if (e.target.closest("button")) return;
+      p.classList.toggle("is-fold");
+    });
+  });
+
+  window.addEventListener("resize", function () {
+    moveInk(tabsBox && tabsBox.querySelector(".tab.is-on"));
+  });
+
+  /* ---------- 启动 ---------- */
+
+  renderAll();
+
+  var booted = false;
+
+  function boot() {
+    if (booted) return;
+    booted = true;
+
+    if (window.BXAuth) {
+      window.BXAuth.me().then(function (who) {
+      if (who && who.ok) {
+        gate.hidden = true;
+        formBox.hidden = false;
+        pickTab("basic");
+        loadRemote();
+      } else if (who && who.reason && who.reason !== "none") {
+        var p = gate.querySelector("p");
+        if (p) p.textContent = "上次的登录没认出来（" + who.reason + "），重新点一次。";
+      }
+    });
+    }
+  }
+
+  window.BXHomeEditBoot = boot;
+
+  if (/^#\/home-edit$/.test(location.hash)) boot();
+})();
+</script>
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- 登录门 ---------- */
+
+  window.addEventListener("error", function (e) {
+    var box = document.getElementById("status");
+    if (box) {
+      box.textContent = "脚本错误：" + e.message + "（第 " + e.lineno + " 行）";
+      box.className = "status err";
+    }
+  });
+
+  var gate = document.getElementById("gate");
+  var gateOk = document.getElementById("gate-ok");
+  var gateMsg = document.getElementById("gate-msg");
+  var authState = document.getElementById("auth-state");
+
+  function openGate(ok) {
+    if (ok) {
+      gate.hidden = true;
+      gate.style.display = "none";
+    } else {
+      gate.hidden = false;
+      gate.style.display = "";
+    }
+  }
+
+  var gateInput = document.getElementById("gate-input");
+
+  /* 小眼睛：点一下在掩码与明文之间切换，切完把焦点还给输入框 */
+  (function bindEye() {
+    var eye = document.getElementById("gate-eye");
+    if (!gateInput || !eye) return;
+    eye.addEventListener("click", function () {
+      var show = gateInput.type === "password";
+      gateInput.type = show ? "text" : "password";
+      eye.classList.toggle("is-on", show);
+      eye.setAttribute("aria-pressed", show ? "true" : "false");
+      eye.setAttribute("aria-label", show ? "隐藏密码" : "显示密码");
+      gateInput.focus();
+    });
+  })();
+
+  function signIn() {
+    if (!window.BXAuth) {
+      gateMsg.textContent = "auth.js 没加载，检查同目录下有没有这个文件。";
+      return;
+    }
+    var pw = (gateInput && gateInput.value ? gateInput.value : "").trim();
+    if (!pw) {
+      gateMsg.textContent = "先填密钥。";
+      return;
+    }
+    gateMsg.textContent = "正在核对…";
+    window.BXAuth.loginWithPassword(pw).then(function () {
+      openGate(true); if (authState) authState.textContent = "已登录"; loadRemote();
+    }).catch(function (e) {
+      gateMsg.textContent = e && e.message ? e.message : "密码不对";
+      if (gateInput) gateInput.select();
+    });
+  }
+
+  if (gateInput) {
+    gateInput.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") signIn();
+    });
+  }
+
+  gateOk.addEventListener("click", signIn);
+
+  function checkWho() {
+    if (!window.BXAuth) return Promise.resolve({ ok: false });
+    return window.BXAuth.me();
+  }
+
+  var booted = false;
+
+  function boot() {
+    if (booted) return;
+    booted = true;
+    checkWho().then(function (who) {
+    var ok = !!(who && who.ok);
+    openGate(ok);
+    if (authState) authState.textContent = ok ? "已登录：" + who.login : "未登录";
+    if (ok) {
+      loadRemote();
+    } else {
+      setStatus("先登录再写。", "");
+      if (gateMsg) {
+        gateMsg.textContent = who && who.reason && who.reason !== "none"
+          ? "上次的登录没认出来（" + who.reason + "），重新点一次。"
+          : "";
+      }
+    }
+    });
+  }
+
+  window.BXWriteBoot = boot;
+
+  if (/^#\/write$/.test(location.hash)) boot();
+
+  var CFG_KEY = "bxz-admin-cfg";
+
+  var els = {
+    owner: document.getElementById("cfg-owner"),
+    repo: document.getElementById("cfg-repo"),
+    branch: document.getElementById("cfg-branch"),
+    saveCfg: document.getElementById("save-cfg"),
+    date: document.getElementById("f-date"),
+    title: document.getElementById("f-title"),
+    body: document.getElementById("f-body"),
+    save: document.getElementById("btn-save"),
+    del: document.getElementById("btn-del"),
+    reload: document.getElementById("btn-reload"),
+    newEntry: document.getElementById("new-entry"),
+    entries: document.getElementById("entries"),
+    preview: document.getElementById("preview"),
+    status: document.getElementById("status"),
+    count: document.getElementById("count")
+  };
+
+  var DATA_PATH = "moments.js";
+  var list = [];          // 当前全部条目
+  var fileSha = null;     // 远端文件版本
+  var currentIndex = -1;  // 正在编辑第几条，-1 表示新增
+
+  function loadCfg() {
+    var cfg = {};
+    try { cfg = JSON.parse(localStorage.getItem(CFG_KEY) || "{}"); } catch (e) { cfg = {}; }
+    els.owner.value = cfg.owner || "BX-ZERO";
+    els.repo.value = cfg.repo || "Personal-website";
+    els.branch.value = cfg.branch || "main";
+  }
+
+  function readCfg() {
+    return {
+      owner: els.owner.value.trim() || "BX-ZERO",
+      repo: els.repo.value.trim() || "Personal-website",
+      branch: els.branch.value.trim() || "main"
+    };
+  }
+
+  function saveCfg() {
+    var cfg = readCfg();
+    try { localStorage.setItem(CFG_KEY, JSON.stringify(cfg)); } catch (e) {}
+    setStatus("设置已存在本机。", "ok");
+  }
+
+  function setStatus(text, kind) {
+    els.status.textContent = text || "";
+    els.status.className = "status" + (kind ? " " + kind : "");
+  }
+
+  /* ---------- 编码 ---------- */
+
+  function b64encode(str) {
+    var bytes = new TextEncoder().encode(str);
+    var bin = "";
+    for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+    return btoa(bin);
+  }
+
+  function b64decode(b64) {
+    var bin = atob(String(b64).replace(/\</g, ""));
+    var bytes = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return new TextDecoder().decode(bytes);
+  }
+
+  /* ---------- 文件格式 ---------- */
+
+  var HEADER = "/* ==========================================================\n" +
+    "   动态数据\n" +
+    "   每一条：{ date: \"YYYY-MM-DD\", title: \"标题\", body: \"正文（Markdown 简写）\" }\n" +
+    "   排序：新写的放数组最前面\n" +
+    "   这个文件可以直接手改，也可以在首页的写作台里在线编辑后保存\n" +
+    "   ========================================================== */\n\n" +
+    "window.BX_MOMENTS = ";
+
+  function toFileText(items) {
+    return HEADER + JSON.stringify(items, null, 2) + ";\n";
+  }
+
+  function parseFileText(text) {
+    var m = String(text).match(/window\.BX_MOMENTS\s*=\s*([\s\S]*?);?\s*$/);
+    if (!m) return [];
+    try {
+      var arr = JSON.parse(m[1]);
+      if (Array.isArray(arr)) return arr;
+    } catch (e) {
+      /* 手写的对象字面量键没引号，JSON 会拒，退回求值 */
+    }
+    try {
+      var made = new Function("return (" + m[1] + ");")();
+      return Array.isArray(made) ? made : [];
+    } catch (e2) {
+      setStatus("文件解析失败：" + e2.message, "err");
+      return [];
+    }
+  }
+
+  /* ---------- 渲染 ---------- */
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+    });
+  }
+
+  function inline(s) {
+    return esc(s)
+      .replace(/`([^`]+)`/g, "<code>$1</code>")
+      .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+      .replace(/\*([^*]+)\*/g, "<em>$1</em>")
+      .replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  }
+
+  function renderBody(text) {
+    return String(text || "")
+      .split(/\n{2,}/)
+      .filter(function (b) { return b.trim(); })
+      .map(function (b) { return "<p>" + inline(b).replace(/\n/g, "<br>") + "</p>"; })
+      .join("");
+  }
+
+  function renderList() {
+    els.count.textContent = list.length + " 条";
+    if (!list.length) {
+      els.entries.innerHTML = '<li class="entry"><span style="color:var(--dimmer)">还没有条目</span></li>';
+      return;
+    }
+    els.entries.innerHTML = list.map(function (m, i) {
+      return '<li class="entry' + (i === currentIndex ? " is-on" : "") + '" data-i="' + i + '">' +
+        "<time>" + esc(String(m.date || "").replace(/-/g, ".")) + "</time>" +
+        "<span>" + esc(m.title || "（无标题）") + "</span>" +
+        '<button class="row-del" type="button" data-del="' + i + '" title="删除这条">×</button>' +
+        "</li>";
+    }).join("");
+  }
+
+  function bodyToHtml(text) {
+    var s = String(text || "");
+    if (!s.trim()) return "";
+    if (/s\/?(p|div|h[1-6]|ul|ol|li|blockquote|pre|img|br|strong|em|span|a|table|hr)\b/i.test(s)) return s;
+    return renderBody(s);
+  }
+
+  var RAW_BASE = "https://raw.githubusercontent.com/BX-ZERO/Personal-website/main/";
+  var failedImgs = new WeakSet();
+
+  /* 正文里存的是相对路径 media/xxx.jpg，线上直接能用；
+     本地预览时相对路径是 404，自动退回仓库原始地址。不改 DOM 属性，保存出去仍然干净。 */
+  document.addEventListener("error", function (e) {
+    var img = e.target;
+    if (!img || img.tagName !== "IMG" || failedImgs.has(img)) return;
+    var src = img.getAttribute("src") || "";
+    if (!/^media\//.test(src)) return;
+    failedImgs.add(img);
+    img.src = RAW_BASE + src;
+  }, true);
+
+  /* 编辑区显示标签，保存与预览时才还原成 img */
+  var attachments = [];
+  var attsBox = document.getElementById("atts");
+  var attRaw = {};
+
+  function rawOf(src) {
+    if (/^https?:/i.test(src)) return src;
+    return RAW_BASE + src;
+  }
+
+  function renderAtts() {
+    if (!attsBox) return;
+    if (!attachments.length) {
+      attsBox.innerHTML = "";
+      return;
+    }
+    attsBox.innerHTML = attachments.map(function (a, i) {
+      return '<div class="att" data-i="' + i + '">' +
+        '<img class="att-thumb" src="' + rawOf(a.src) + '" alt="">' +
+        '<div class="att-foot">' +
+        '<span class="att-name" title="' + (a.name || "") + '">' + (i + 1) + ". " + (a.name || "") + "</span>" +
+        '<button class="att-btn" type="button" data-att="ins" title="插到光标处">插</button>' +
+        '<button class="att-btn" type="button" data-att="up" title="上移">↑</button>' +
+        '<button class="att-btn" type="button" data-att="down" title="下移">↓</button>' +
+        '<button class="att-btn del" type="button" data-att="del" title="删除">×</button>' +
+        "</div></div>";
+    }).join("");
+  }
+
+  function toChip(src, name) {
+    var chip = document.createElement("span");
+    chip.className = "img-chip";
+    chip.setAttribute("contenteditable", "false");
+    chip.setAttribute("data-src", src || "");
+    chip.setAttribute("data-name", name || "");
+    chip.textContent = "图片 " + (name || "");
+    return chip;
+  }
+
+  /* 只把「正文末尾连续的图片」收成附件，中间的图留作可拖动的标签 */
+  function splitImages(html) {
+    var holder = document.createElement("div");
+    holder.innerHTML = html;
+    var picked = [];
+    while (holder.lastElementChild) {
+      var last = holder.lastElementChild;
+      var found = last.tagName === "IMG"
+        ? [last]
+        : (last.textContent.trim() ? [] : Array.prototype.slice.call(last.querySelectorAll("img")));
+      if (!found.length) break;
+      found.reverse().forEach(function (img) {
+        var src = img.getAttribute("src") || "";
+        picked.unshift({ src: src, name: img.getAttribute("alt") || src.split("/").pop() });
+      });
+      last.remove();
+    }
+    Array.prototype.slice.call(holder.querySelectorAll("img")).forEach(function (img) {
+      var src = img.getAttribute("src") || "";
+      img.replaceWith(toChip(src, img.getAttribute("alt") || src.split("/").pop()));
+    });
+    return { html: holder.innerHTML, images: picked };
+  }
+
+  function readBodyHtml() {
+    var clone = els.body.cloneNode(true);
+    clone.querySelectorAll(".img-chip").forEach(function (chip) {
+      var img = document.createElement("img");
+      img.setAttribute("src", chip.getAttribute("data-src") || "");
+      img.setAttribute("alt", chip.getAttribute("data-name") || "");
+      chip.replaceWith(img);
+    });
+    var imgs = attachments.map(function (a) {
+      return '<img src="' + a.src + '" alt="' + (a.name || "").replace(/"/g, "") + '">';
+    }).join("");
+    return clone.innerHTML + imgs;
+  }
+
+  /* 把某张附件插到光标处，之后它就算正文的一部分 */
+  function insertAttachment(i) {
+    var a = attachments[i];
+    if (!a) return;
+    els.body.focus();
+    restoreRange();
+    var holder = document.createElement("span");
+    holder.appendChild(toChip(a.src, a.name));
+    document.execCommand("insertHTML", false, holder.innerHTML + "&nbsp;");
+    rememberRange();
+    attachments.splice(i, 1);
+    renderAtts();
+    renderPreview();
+    writeDraft(true);
+    setStatus("图片放到光标处了", "ok");
+  }
+
+  if (attsBox) {
+    attsBox.addEventListener("click", function (e) {
+      var btn = e.target.closest("[data-att]");
+      if (!btn) return;
+      var host = e.target.closest(".att");
+      var i = parseInt(host.dataset.i, 10);
+      if (isNaN(i) || !attachments[i]) return;
+      var action = btn.dataset.att;
+      if (action === "ins") {
+        insertAttachment(i);
+        return;
+      }
+      if (action === "del") {
+        attachments.splice(i, 1);
+      } else if (action === "up" && i > 0) {
+        var tmp = attachments[i - 1];
+        attachments[i - 1] = attachments[i];
+        attachments[i] = tmp;
+      } else if (action === "down" && i < attachments.length - 1) {
+        var tmp2 = attachments[i + 1];
+        attachments[i + 1] = attachments[i];
+        attachments[i] = tmp2;
+      }
+      renderAtts();
+      renderPreview();
+    });
+  }
+
+  function renderPreview() {
+    var t = els.title.value.trim();
+    var html = bodyToHtml(readBodyHtml());
+    var inner = "<h1>" + inline(t || "（无标题）") + "</h1>" +
+      (html || '<p style="color:var(--dimmer)">正文还是空的。</p>');
+    els.preview.innerHTML = '<div class="article">' + inner + "</div>";
+    var fb = document.getElementById("float-body");
+    if (fb) fb.innerHTML = inner;
+  }
+
+  /* ---------- 表单 ---------- */
+
+  function fillForm(item) {
+    els.date.value = item ? (item.date || "") : new Date().toISOString().slice(0, 10);
+    els.title.value = item ? (item.title || "") : "";
+    var split = item ? splitImages(bodyToHtml(item.body)) : { html: "", images: [] };
+    els.body.innerHTML = split.html;
+    attachments = split.images;
+    renderAtts();
+    renderPreview();
+  }
+
+  function readForm() {
+    return {
+      date: els.date.value || new Date().toISOString().slice(0, 10),
+      title: els.title.value.trim(),
+      body: readBodyHtml()
+    };
+  }
+
+  /* ---------- GitHub API ---------- */
+
+  function apiUrl(cfg) {
+    return "https://api.github.com/repos/" + cfg.owner + "/" + cfg.repo + "/contents/" + DATA_PATH;
+  }
+
+  function loadRemote() {
+    if (!window.BXAuth) {
+      setStatus("auth.js 没加载，读不了仓库。", "err");
+      return Promise.reject(new Error("no auth"));
+    }
+    setStatus("正在读取仓库…");
+    return window.BXAuth.read(DATA_PATH)
+      .then(function (data) {
+        if (data.missing) {
+          fileSha = null;
+          list = [];
+          renderList();
+          setStatus("仓库里还没有这个文件，第一次保存会新建。", "ok");
+          return;
+        }
+        fileSha = data.sha;
+        list = parseFileText(data.text);
+        renderList();
+        setStatus("已读取 " + list.length + " 条。", "ok");
+      })
+      .catch(function (e) {
+        setStatus("读取失败：" + e.message, "err");
+      });
+  }
+
+  function putRemote(items, message) {
+    if (!window.BXAuth) {
+      setStatus("auth.js 没加载，无法提交。", "err");
+      return Promise.reject(new Error("no auth"));
+    }
+    setStatus("正在提交…");
+    return window.BXAuth.save(DATA_PATH, toFileText(items), message)
+      .then(function () {
+        setStatus("已提交。Pages 一般一分钟内重建完，稍等刷新站点。", "ok");
+        return loadRemote();
+      })
+      .then(function () {
+        sweepOrphans();
+      })
+      .catch(function (e) {
+        setStatus("提交失败：" + e.message, "err");
+      });
+  }
+
+  /* 提交完顺手清掉没人引用的旧图，失败不打扰 */
+  function sweepOrphans() {
+    if (!window.BXAuth || !window.BXAuth.cleanup) return;
+    window.BXAuth.cleanup({ minAgeHours: 24 })
+      .then(function (res) {
+        var n = (res.deleted || []).length;
+        if (n > 0) setStatus("已提交，顺手清掉了 " + n + " 张没人引用的旧图。", "ok");
+      })
+      .catch(function () {});
+  }
+
+  /* 手动清理：先试算，确认后立刻删，不看上传时间 */
+  function doSweep() {
+    if (!window.BXAuth || !window.BXAuth.cleanup) {
+      setStatus("auth.js 没加载，清不了。", "err");
+      return;
+    }
+    setStatus("正在统计…");
+    window.BXAuth.cleanup({ dryRun: true, minAgeHours: 0 })
+      .then(function (res) {
+        var n = (res.deleted || []).length;
+        if (n === 0) {
+          setStatus("没有没人引用的图片，仓库是干净的。", "ok");
+          return;
+        }
+        if (!window.confirm("有 " + n + " 张图片没有任何动态或主页引用，删掉之后只能从提交历史里找回。继续？")) {
+          setStatus("已取消。", "");
+          return;
+        }
+        setStatus("正在删除 " + n + " 张…");
+        return window.BXAuth.cleanup({ minAgeHours: 0 }).then(function (r2) {
+          setStatus(
+            "清掉了 " + (r2.deleted || []).length + " 张，保留 " + (r2.kept || 0) + " 张在用的。",
+            "ok"
+          );
+        });
+      })
+      .catch(function (e) {
+        setStatus("清理失败：" + e.message, "err");
+      });
+  }
+
+  /* ---------- 动作 ---------- */
+
+  function doSave() {
+    var item = readForm();
+    if (!item.title && !item.body.trim()) {
+      setStatus("标题和正文都是空的，没什么可存。", "err");
+      return;
+    }
+    if (currentIndex >= 0 && currentIndex < list.length) {
+      list[currentIndex] = item;
+    } else {
+      list.unshift(item);
+      currentIndex = 0;
+    }
+    renderList();
+    putRemote(list, "更新动态");
+    dropDraft();
+  }
+
+  function deleteAt(index) {
+    if (index < 0 || index >= list.length) {
+      setStatus("先在上面的列表里点一条要删的。", "err");
+      return;
+    }
+    var title = list[index].title || "无标题";
+    if (!window.confirm("删掉「" + title + "」？")) return;
+    list.splice(index, 1);
+    currentIndex = -1;
+    fillForm(null);
+    renderList();
+    putRemote(list, "删除动态");
+  }
+
+  function doDelete() {
+    deleteAt(currentIndex);
+  }
+
+  /* ---------- 绑定 ---------- */
+
+  els.saveCfg.addEventListener("click", saveCfg);
+
+  els.newEntry.addEventListener("click", function () {
+    currentIndex = -1;
+    fillForm(null);
+    renderList();
+    setStatus("新建一条，写完点保存。", "ok");
+  });
+
+  els.save.addEventListener("click", doSave);
+  els.del.addEventListener("click", doDelete);
+  els.reload.addEventListener("click", loadRemote);
+  document.getElementById("btn-sweep").addEventListener("click", doSweep);
+
+  els.entries.addEventListener("click", function (e) {
+    var del = e.target.closest("[data-del]");
+    if (del) {
+      e.stopPropagation();
+      deleteAt(parseInt(del.dataset.del, 10));
+      return;
+    }
+    var li = e.target.closest(".entry[data-i]");
+    if (!li) return;
+    var i = parseInt(li.dataset.i, 10);
+    if (isNaN(i) || !list[i]) return;
+    currentIndex = i;
+    fillForm(list[i]);
+    renderList();
+    setStatus("正在改「" + (list[i].title || "无标题") + "」。", "ok");
+  });
+
+  els.title.addEventListener("input", renderPreview);
+  els.body.addEventListener("input", renderPreview);
+
+  /* ---------- 仓库设置：收进按钮 ---------- */
+
+  var connToggle = document.getElementById("conn-toggle");
+  var connPane = document.getElementById("conn-pane");
+
+  if (connToggle && connPane) {
+    connToggle.addEventListener("click", function () {
+      var open = connPane.hidden;
+      connPane.hidden = !open;
+      connToggle.setAttribute("aria-expanded", open ? "true" : "false");
+      connToggle.classList.toggle("is-on", open);
+    });
+  }
+
+  /* ---------- 富文本工具条 ---------- */
+
+  var toolbar = document.getElementById("rt-toolbar");
+  var savedRange = null;
+
+  function rememberRange() {
+    var sel = window.getSelection();
+    if (sel && sel.rangeCount && els.body.contains(sel.anchorNode)) {
+      savedRange = sel.getRangeAt(0).cloneRange();
+    }
+  }
+
+  function restoreRange() {
+    if (!savedRange) return;
+    var sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(savedRange);
+  }
+
+  function exec(cmd, value) {
+    els.body.focus();
+    restoreRange();
+    document.execCommand(cmd, false, value === undefined ? null : value);
+    rememberRange();
+    renderPreview();
+  }
+
+  if (toolbar) {
+    document.addEventListener("selectionchange", function () {
+      if (document.activeElement === els.body) rememberRange();
+    });
+
+    toolbar.addEventListener("mousedown", function (e) {
+      if (e.target.closest("button")) e.preventDefault();
+    });
+
+    toolbar.querySelectorAll("button[data-cmd]").forEach(function (b) {
+      b.addEventListener("click", function () { exec(b.dataset.cmd); });
+    });
+
+    var blockSel = toolbar.querySelector("[data-block]");
+    if (blockSel) {
+      blockSel.addEventListener("change", function () {
+        exec("formatBlock", "<" + blockSel.value + ">");
+      });
+    }
+
+    var sizeSel = toolbar.querySelector("[data-size]");
+    if (sizeSel) {
+      sizeSel.addEventListener("change", function () {
+        var px = sizeSel.value;
+        if (!px) return;
+        var sel = window.getSelection();
+        if (!sel || !sel.rangeCount || sel.isCollapsed) {
+          setStatus("先选中要改字号的文字。", "err");
+          return;
+        }
+        var range = sel.getRangeAt(0);
+        var span = document.createElement("span");
+        span.style.fontSize = px;
+        try {
+          span.appendChild(range.extractContents());
+          range.insertNode(span);
+          renderPreview();
+        } catch (err) {
+          setStatus("字号调整失败：" + err.message, "err");
+        }
+      });
+    }
+
+    var colorInput = document.getElementById("rt-color");
+    if (colorInput) {
+      colorInput.addEventListener("input", function () { exec("foreColor", colorInput.value); });
+    }
+
+    var linkBtn = document.getElementById("rt-link");
+    if (linkBtn) {
+      linkBtn.addEventListener("click", function () {
+        var href = window.prompt("链接地址", "https://");
+        if (href) exec("createLink", href);
+      });
+    }
+
+    var hrBtn = document.getElementById("rt-hr");
+    if (hrBtn) {
+      hrBtn.addEventListener("click", function () {
+        els.body.focus();
+        restoreRange();
+        document.execCommand("insertHorizontalRule", false, null);
+        renderPreview();
+      });
+    }
+
+    var clearBtn = document.getElementById("rt-clear");
+  var draftBtn = document.getElementById("rt-draft");
+  if (draftBtn) {
+    draftBtn.addEventListener("click", function () { writeDraft(false); });
+  }
+  if (clearBtn) {
+      clearBtn.addEventListener("click", function () { exec("removeFormat"); });
+    }
+
+    /* ---------- 插入图片：压缩后传到仓库 media/ ---------- */
+
+    var imgBtn = document.getElementById("rt-img");
+    var imgFile = document.getElementById("img-file");
+    var fileNameBox = document.getElementById("rt-file-name");
+
+    function noteFile(text, state) {
+      if (!fileNameBox) return;
+      fileNameBox.value = text;
+      fileNameBox.classList.remove("is-busy", "is-done", "is-err");
+      if (state) fileNameBox.classList.add(state);
+    }
+
+    if (imgBtn && imgFile) {
+      imgBtn.addEventListener("click", function () { imgFile.click(); });
+
+      imgFile.addEventListener("change", function () {
+        var files = Array.prototype.slice.call(imgFile.files || []);
+        if (!files.length) return;
+        setStatus("正在处理 " + files.length + " 张图片…");
+        files.reduce(function (chain, file) {
+          return chain.then(function () { return sendImage(file); });
+        }, Promise.resolve()).then(function () {
+          imgFile.value = "";
+          renderPreview();
+          setStatus("图片已插入。", "ok");
+        }).catch(function (err) {
+          setStatus("图片上传失败：" + (err && err.message ? err.message : err), "err");
+        });
+      });
+    }
+
+    function shrink(file) {
+      return new Promise(function (resolve, reject) {
+        var reader = new FileReader();
+        reader.onerror = function () { reject(new Error("读不了文件")); };
+        reader.onload = function () {
+          var img = new Image();
+          img.onerror = function () { reject(new Error("不是有效图片")); };
+          img.onload = function () {
+            var max = 1600;
+            var w = img.width;
+            var h = img.height;
+            if (w > max) { h = Math.round(h * max / w); w = max; }
+            var canvas = document.createElement("canvas");
+            canvas.width = w;
+            canvas.height = h;
+            canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+            var type = /png/i.test(file.type) ? "image/png" : "image/jpeg";
+            var data = canvas.toDataURL(type, 0.88);
+            resolve({ data: data, type: type });
+          };
+          img.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function sendImage(file) {
+      var label = file.name || "图片";
+      var safe = label.replace(/"/g, "");
+      noteFile("上传中… " + label, "is-busy");
+
+      return shrink(file).then(function (out) {
+        var base64 = out.data.split(",")[1];
+        var ext = out.type === "image/png" ? "png" : "jpg";
+        var name = "media/" + Date.now() + "-" + Math.random().toString(36).slice(2, 7) + "." + ext;
+        return window.BXAuth.upload(name, base64).then(function (res) {
+          var path = (res && res.path) || name;
+          attachments.push({ src: path, name: label });
+          renderAtts();
+          renderPreview();
+          noteFile(label + " 已加进附件", "is-done");
+        });
+      }).catch(function (err) {
+        noteFile(label + " 上传失败", "is-err");
+        throw err;
+      });
+    }
+  }
+
+  /* ---------- 悬停浮出整页预览 ---------- */
+
+  var floatBox = document.getElementById("float-preview");
+  var previewBox = document.getElementById("preview");
+
+  if (floatBox && previewBox) {
+    var hoverTimer = null;
+    var closeTimer = null;
+
+    function openFloat() {
+      clearTimeout(closeTimer);
+      floatBox.hidden = false;
+      requestAnimationFrame(function () { floatBox.classList.add("is-open"); });
+    }
+
+    function closeFloat() {
+      floatBox.classList.remove("is-open");
+      setTimeout(function () {
+        if (!floatBox.classList.contains("is-open")) floatBox.hidden = true;
+      }, 200);
+    }
+
+    previewBox.addEventListener("mouseenter", function () {
+      hoverTimer = setTimeout(openFloat, 240);
+    });
+
+    previewBox.addEventListener("mouseleave", function () {
+      clearTimeout(hoverTimer);
+      closeTimer = setTimeout(closeFloat, 180);
+    });
+
+    var floatSheet = floatBox.querySelector(".float-sheet");
+    if (floatSheet) {
+      floatSheet.addEventListener("mouseenter", function () { clearTimeout(closeTimer); });
+      floatSheet.addEventListener("mouseleave", function () { closeFloat(); });
+    }
+  }
+
+  /* ---------- 草稿（本机） ---------- */
+
+  var DRAFT_KEY = "bxz-draft";
+  var draftTimer = null;
+
+  function writeDraft(quiet) {
+    clearTimeout(draftTimer);
+    draftTimer = setTimeout(function () {
+      try {
+        localStorage.setItem(DRAFT_KEY, JSON.stringify({
+          date: els.date.value,
+          title: els.title.value,
+          body: els.body.innerHTML,
+          atts: attachments,
+          at: Date.now()
+        }));
+        if (!quiet) setStatus("草稿已存在本机", "ok");
+      } catch (e) {
+        if (!quiet) setStatus("草稿存不下（浏览器不让写本地）", "err");
+      }
+    }, quiet ? 500 : 0);
+  }
+
+  function readDraft() {
+    try {
+      var raw = localStorage.getItem(DRAFT_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function dropDraft() {
+    try { localStorage.removeItem(DRAFT_KEY); } catch (e) { /* 忽略 */ }
+  }
+
+  function restoreDraft() {
+    var d = readDraft();
+    if (!d) return false;
+    if (!d.title && !d.body && !(d.atts && d.atts.length)) return false;
+    els.date.value = d.date || els.date.value;
+    els.title.value = d.title || "";
+    els.body.innerHTML = d.body || "";
+    attachments = Array.isArray(d.atts) ? d.atts : [];
+    renderAtts();
+    renderPreview();
+    setStatus("已恢复上次没保存的草稿", "ok");
+    return true;
+  }
+
+  ["input", "keyup", "paste"].forEach(function (evt) {
+    els.title.addEventListener(evt, function () { writeDraft(true); });
+    els.body.addEventListener(evt, function () { writeDraft(true); });
+  });
+  els.date.addEventListener("change", function () { writeDraft(true); });
+
+  /* ---------- 启动 ---------- */
+
+  loadCfg();
+  fillForm(null);
+  renderList();
+  restoreDraft();
+})();
+</script>
+</script>
 </body>
 </html>

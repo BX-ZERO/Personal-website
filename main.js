@@ -15,6 +15,8 @@
   var lastView = "home";
 
   function show(name) {
+    if (name === "write" && window.BXWriteBoot) window.BXWriteBoot();
+    if (name === "home-edit" && window.BXHomeEditBoot) window.BXHomeEditBoot();
     if (name !== "post") lastView = name;
     views.forEach(function (v) {
       v.classList.toggle("is-on", v.id === "view-" + name);
@@ -454,7 +456,7 @@
       show(ok ? "post" : "moments");
       return;
     }
-    var name = (/^#\/(home|moments|tools|account)$/.exec(h) || [])[1];
+    var name = (/^#\/(home|home-edit|moments|tools|account|write)$/.exec(h) || [])[1];
     if (!name) {
       name = "home";
       if (h !== "#/home") history.replaceState(null, "", "#/home");
@@ -677,8 +679,8 @@
       '<div class="acc-sub">已登录，可以改动态与主页信息了。</div>' +
       "</div></div>" +
       '<div class="acc-actions">' +
-      '<a class="m-btn m-btn-main" href="edit.html">进入写作台</a>' +
-      '<a class="m-btn" href="home-edit.html">改主页信息</a>' +
+      '<a class="m-btn m-btn-main" href="#/write" data-view="write">进入写作台</a>' +
+      '<a class="m-btn" href="#/home-edit" data-view="home-edit">改主页信息</a>' +
       '<button class="m-btn" id="acc-logout" type="button">退出登录</button>' +
       "</div>" +
       '<div class="acc-stats" id="acc-stats">' +
