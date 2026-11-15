@@ -46,7 +46,7 @@ window.BX_HOME = {
     }
   ],
   "music": {
-    "volume": 0.35,
+    "volume": 0.5,
     "tracks": [
       {
         "title": "KNOW MY NAME",

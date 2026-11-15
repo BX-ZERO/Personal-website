@@ -478,7 +478,7 @@
 
   /* ---------- 背景音乐播放器 ---------- */
 
-  var VOL_KEY = "bxz-volume";
+  var VOL_KEY = "bxz-volume-2";
 
   var ICON_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>';
   var ICON_PAUSE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>';
@@ -516,7 +516,7 @@
     var savedVol = Number(load(VOL_KEY));
     var vol = isFinite(savedVol) && savedVol >= 0
       ? Math.max(0, Math.min(1, savedVol))
-      : (typeof cfg.volume === "number" ? cfg.volume : 0.35);
+      : (typeof cfg.volume === "number" ? cfg.volume : 0.5);
     audio.volume = vol;
 
     function load2(k) {
