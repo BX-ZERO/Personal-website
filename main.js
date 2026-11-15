@@ -190,6 +190,25 @@
       .join("");
   }
 
+  function bodyToHtml(text) {
+    var s = String(text || "");
+    if (!s.trim()) return "";
+    if (/<\/?(p|div|h[1-6]|ul|ol|li|blockquote|pre|img|br|strong|em|span|a|table|hr|figure)\b/i.test(s)) return s;
+    return renderBody(s);
+  }
+
+  function excerpt(html, limit) {
+    var div = document.createElement("div");
+    div.innerHTML = html;
+    var text = (div.textContent || "").replace(/\s+/g, " ").trim();
+    if (text.length <= limit) return text;
+    return text.slice(0, limit) + "…";
+  }
+
+  function postHref(index, title) {
+    return "post.html?i=" + index + "&t=" + encodeURIComponent(title || "");
+  }
+
   function renderMoments() {
     if (!momentList) return;
     var data = window.BX_MOMENTS;
@@ -199,9 +218,15 @@
     });
     momentList.innerHTML = sorted.map(function (o) {
       var m = o.item;
+      var href = postHref(o.index, m.title);
+      var brief = excerpt(bodyToHtml(m.body), 120);
       return '<li class="moment" data-i="' + o.index + '">' +
         '<time class="moment-date" datetime="' + esc(m.date) + '">' + esc(String(m.date).replace(/-/g, ".")) + '</time>' +
-        '<div class="moment-body"><h3>' + inline(m.title) + "</h3>" + renderBody(m.body) + "</div>" +
+        '<div class="moment-body">' +
+        '<h3><a class="moment-link" href="' + href + '">' + inline(m.title) + "</a></h3>" +
+        (brief ? "<p>" + esc(brief) + "</p>" : "") +
+        '<a class="moment-more" href="' + href + '">阅读全文 →</a>' +
+        "</div>" +
         "</li>";
     }).join("");
   }

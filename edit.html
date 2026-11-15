@@ -305,6 +305,187 @@
     .settings-grid { grid-template-columns: 1fr; }
   }
 
+  /* 仓库设置收进按钮后的横条 */
+  .conn-bar { display: flex; align-items: center; gap: 12px; margin: 0 0 16px; }
+  .conn-who { font-size: 12.5px; color: var(--dimmer); }
+  .conn { margin-bottom: 18px; }
+  .btn.is-on { border-color: var(--cyan); color: var(--cyan); }
+
+  .two { display: grid; grid-template-columns: 180px 1fr; gap: 14px; }
+
+  /* 富文本区 */
+  .rt { border: 1px solid var(--line-strong); }
+
+  .rt-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--line);
+    background: rgba(0, 0, 0, .22);
+  }
+
+  .rt-toolbar button {
+    min-width: 30px;
+    height: 28px;
+    padding: 0 8px;
+    font-size: 12px;
+    color: var(--dim);
+    background: none;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: color .18s ease, border-color .18s ease;
+  }
+
+  .rt-toolbar button:hover { color: var(--cyan); border-color: var(--line-strong); }
+
+  .rt-select {
+    height: 28px;
+    padding: 0 6px;
+    font-size: 12px;
+    color: var(--text);
+    background: rgba(0, 0, 0, .3);
+    border: 1px solid var(--line-strong);
+  }
+
+  .rt-sep { width: 1px; height: 18px; background: var(--line-strong); margin: 0 4px; }
+  .rt-color { width: 32px; height: 28px; padding: 0; background: none; border: 1px solid var(--line-strong); cursor: pointer; }
+
+  .rt-body {
+    min-height: 420px;
+    max-height: 64vh;
+    overflow: auto;
+    padding: 18px 20px;
+    font-size: 15px;
+    line-height: 1.9;
+    color: var(--text);
+    outline: none;
+  }
+
+  .rt-body:empty::before {
+    content: "在这里写。选中文字，再点工具条上的按钮。";
+    color: var(--dimmer);
+  }
+
+  .rt-body img, .article img { max-width: 100%; height: auto; display: block; margin: 16px 0; }
+  .rt-body blockquote, .article blockquote {
+    margin: 16px 0;
+    padding: 6px 16px;
+    border-left: 2px solid var(--cyan);
+    color: var(--dim);
+  }
+  .rt-body pre, .article pre {
+    margin: 16px 0;
+    padding: 12px 14px;
+    overflow: auto;
+    font-size: 13px;
+    line-height: 1.7;
+    background: rgba(0, 0, 0, .35);
+  }
+  .rt-body h2, .article h2 { font-size: 22px; margin: 20px 0 10px; }
+  .rt-body h3, .article h3 { font-size: 18px; margin: 16px 0 8px; }
+  .rt-body ul, .rt-body ol, .article ul, .article ol { margin: 12px 0; padding-left: 24px; }
+  .rt-body a, .article a { color: var(--cyan); }
+  .rt-body hr, .article hr { border: 0; border-top: 1px solid var(--line-strong); margin: 22px 0; }
+
+  .article h1 { margin: 0 0 18px; font-size: 25px; letter-spacing: .01em; }
+  .article p { margin: 0 0 14px; font-size: 15px; line-height: 1.95; }
+
+  /* 工具条右侧：最近插入的图片名字 */
+  .rt-file {
+    width: 190px;
+    height: 26px;
+    padding: 0 8px;
+    font-size: 11.5px;
+    color: var(--dim);
+    background: rgba(0, 0, 0, .28);
+    border: 1px solid var(--line-strong);
+    outline: none;
+  }
+
+  .rt-file.is-busy { border-color: var(--cyan); color: var(--cyan); }
+  .rt-file.is-done { border-color: var(--cyan); color: var(--cyan); }
+  .rt-file.is-err { border-color: #ff7a1a; color: #ff7a1a; }
+
+  /* 悬停浮出的整页预览 */
+  .preview { position: relative; }
+
+  .preview-hint {
+    position: absolute;
+    right: 12px;
+    bottom: 8px;
+    font-size: 10.5px;
+    letter-spacing: .12em;
+    color: var(--dimmer);
+    pointer-events: none;
+  }
+
+  .float-preview {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(4, 7, 10, .72);
+    backdrop-filter: blur(3px);
+    opacity: 0;
+    transition: opacity .18s ease;
+  }
+
+  .float-preview[hidden] { display: none; }
+  .float-preview.is-open { opacity: 1; }
+
+  .float-sheet {
+    width: min(980px, 92vw);
+    height: 84vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg);
+    border: 1px solid var(--line-strong);
+    transform: translateY(14px) scale(.985);
+    opacity: .4;
+    transition: transform .24s cubic-bezier(.2, .8, .3, 1), opacity .24s ease;
+  }
+
+  .float-preview.is-open .float-sheet { transform: none; opacity: 1; }
+
+  .float-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 22px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .float-tag {
+    font-family: var(--font-en);
+    font-size: 10.5px;
+    letter-spacing: .22em;
+    color: var(--dimmer);
+  }
+
+  .float-close {
+    font-size: 11.5px;
+    color: var(--dim);
+    cursor: pointer;
+  }
+
+  .float-close:hover { color: var(--cyan); }
+
+  .float-scroll {
+    flex: 1;
+    overflow: auto;
+    padding: 40px 6%;
+  }
+
+  .float-scroll .article { max-width: 760px; margin: 0 auto; }
+  .float-scroll .article h1 { font-size: 30px; margin-bottom: 26px; }
+
+  html[data-theme="light"] .float-sheet { background: #fff; }
+  html[data-theme="light"] .rt-file { background: #fff; border-color: #d8dee6; color: #4a5561; }
+
   /* 白天模式：把写死的深色底换成浅色 */
   html[data-theme="light"] .pane { background: #fff; border-color: #d8dee6; }
   html[data-theme="light"] .pane input,
@@ -317,6 +498,14 @@
   html[data-theme="light"] .gate-box p { color: #5b6570; }
   html[data-theme="light"] .btn { border-color: #cfd6df; color: #3d4753; }
   html[data-theme="light"] .btn:hover { border-color: var(--cyan); color: var(--cyan); }
+  html[data-theme="light"] .rt { border-color: #d8dee6; }
+  html[data-theme="light"] .rt-toolbar { background: #eef2f6; border-color: #d8dee6; }
+  html[data-theme="light"] .rt-toolbar button { color: #4a5561; }
+  html[data-theme="light"] .rt-toolbar button:hover { border-color: #cfd6df; color: var(--cyan); }
+  html[data-theme="light"] .rt-select { background: #fff; border-color: #d8dee6; color: #10161d; }
+  html[data-theme="light"] .rt-body { color: #10161d; }
+  html[data-theme="light"] .rt-body pre { background: #eef2f6; }
+  html[data-theme="light"] .rt-body blockquote { color: #5b6570; }
 </style>
 </head>
 <body>
@@ -375,8 +564,13 @@
   <h1>写作台</h1>
   <p class="sub">MOMENTS · 写完保存，一分钟左右站点会自己更新</p>
 
-  <!-- 连接设置 -->
-  <section class="pane">
+  <!-- 连接设置：收进按钮 -->
+  <div class="conn-bar">
+    <button class="btn" id="conn-toggle" type="button" aria-expanded="false">仓库设置</button>
+    <span class="conn-who" id="auth-state">正在确认…</span>
+  </div>
+
+  <section class="pane conn" id="conn-pane" hidden>
     <div class="pane-head">
       <h2>CONNECTION</h2><span class="cn">仓库设置</span>
       <span class="fill"></span>
@@ -398,7 +592,7 @@
       </div>
       <div class="field">
         <label>登录状态</label>
-        <div id="auth-state" style="font-size:12.5px;opacity:.75;padding:9px 0;">正在确认…</div>
+        <div id="auth-state2" style="font-size:12.5px;opacity:.75;padding:9px 0;">正在确认…</div>
       </div>
     </div>
 
@@ -408,16 +602,15 @@
     </p>
   </section>
 
-  <div class="grid2">
+  <!-- 编辑区：整宽 -->
+  <section class="pane editor">
+    <div class="pane-head">
+      <h2>EDITOR</h2><span class="cn">写这一条</span>
+      <span class="fill"></span>
+      <button class="btn" id="new-entry" type="button">新建</button>
+    </div>
 
-    <!-- 编辑区 -->
-    <section class="pane">
-      <div class="pane-head">
-        <h2>EDITOR</h2><span class="cn">写这一条</span>
-        <span class="fill"></span>
-        <button class="btn" id="new-entry" type="button">新建</button>
-      </div>
-
+    <div class="two">
       <div class="field">
         <label for="f-date">日期</label>
         <input type="date" id="f-date">
@@ -426,20 +619,62 @@
         <label for="f-title">标题</label>
         <input type="text" id="f-title" placeholder="一句话标题" autocomplete="off">
       </div>
-      <div class="field">
-        <label for="f-body">正文</label>
-        <textarea id="f-body" placeholder="支持 **粗体**、`代码`、[链接](https://...)，空一行分段"></textarea>
-      </div>
+    </div>
 
-      <div class="row">
-        <button class="btn primary" id="btn-save" type="button">保存到仓库</button>
-        <button class="btn danger" id="btn-del" type="button">删除这一条</button>
-        <button class="btn" id="btn-reload" type="button">从仓库重读</button>
+    <div class="field">
+      <label>正文</label>
+      <div class="rt">
+        <div class="rt-toolbar" id="rt-toolbar">
+          <select class="rt-select" data-block>
+            <option value="p">正文</option>
+            <option value="h2">大标题</option>
+            <option value="h3">小标题</option>
+            <option value="blockquote">引用</option>
+            <option value="pre">代码块</option>
+          </select>
+          <select class="rt-select" data-size>
+            <option value="">字号</option>
+            <option value="12px">12</option>
+            <option value="14px">14</option>
+            <option value="16px">16</option>
+            <option value="18px">18</option>
+            <option value="22px">22</option>
+            <option value="28px">28</option>
+          </select>
+          <span class="rt-sep"></span>
+          <button type="button" data-cmd="bold" title="加粗"><b>B</b></button>
+          <button type="button" data-cmd="italic" title="倾斜"><i>I</i></button>
+          <button type="button" data-cmd="underline" title="下划线"><u>U</u></button>
+          <button type="button" data-cmd="strikeThrough" title="删除线"><s>S</s></button>
+          <input type="color" class="rt-color" id="rt-color" value="#35d8ff" title="文字颜色">
+          <span class="rt-sep"></span>
+          <button type="button" data-cmd="justifyLeft" title="左对齐">左</button>
+          <button type="button" data-cmd="justifyCenter" title="居中">中</button>
+          <button type="button" data-cmd="justifyRight" title="右对齐">右</button>
+          <span class="rt-sep"></span>
+          <button type="button" data-cmd="insertUnorderedList" title="无序列表">•</button>
+          <button type="button" data-cmd="insertOrderedList" title="有序列表">1.</button>
+          <button type="button" id="rt-link" title="插入链接">链接</button>
+          <button type="button" id="rt-img" title="插入图片">图片</button>
+          <button type="button" id="rt-hr" title="分隔线">分隔</button>
+          <button type="button" id="rt-clear" title="清除格式">清</button>
+          <span class="rt-sep"></span>
+          <input class="rt-file" id="rt-file-name" type="text" readonly placeholder="还没有插图" title="最近插入的图片">
+        </div>
+        <div class="rt-body" id="f-body" contenteditable="true"></div>
       </div>
-      <p class="status" id="status"></p>
-    </section>
+      <input type="file" id="img-file" accept="image/*" multiple hidden>
+    </div>
 
-    <!-- 列表 + 预览 -->
+    <div class="row">
+      <button class="btn primary" id="btn-save" type="button">保存到仓库</button>
+      <button class="btn danger" id="btn-del" type="button">删除这一条</button>
+      <button class="btn" id="btn-reload" type="button">从仓库重读</button>
+      <span class="status" id="status"></span>
+    </div>
+  </section>
+
+  <div class="grid2">
     <section class="pane">
       <div class="pane-head">
         <h2>ENTRIES</h2><span class="cn">已有的</span>
@@ -448,19 +683,33 @@
       </div>
 
       <ul class="entries" id="entries"></ul>
+    </section>
 
-      <div class="pane-head" style="margin-top:22px">
+    <section class="pane">
+      <div class="pane-head">
         <h2>PREVIEW</h2><span class="cn">效果</span>
       </div>
       <div class="preview" id="preview">
         <div class="moment-body">
           <p style="color:var(--dimmer)">左边写点什么，这里会跟着变。</p>
         </div>
+        <span class="preview-hint">鼠标停在这里，浮出整页效果</span>
       </div>
     </section>
-
   </div>
 </main>
+
+<div class="float-preview" id="float-preview" hidden>
+  <div class="float-sheet">
+    <div class="float-head">
+      <span class="float-tag">POST PREVIEW</span>
+      <span class="float-close" id="float-close">关闭</span>
+    </div>
+    <div class="float-scroll">
+      <div class="article" id="float-body"></div>
+    </div>
+  </div>
+</div>
 
 <script src="auth.js"></script>
 <script>
@@ -643,13 +892,22 @@
     }).join("");
   }
 
+  function bodyToHtml(text) {
+    var s = String(text || "");
+    if (!s.trim()) return "";
+    if (/<\/?(p|div|h[1-6]|ul|ol|li|blockquote|pre|img|br|strong|em|span|a|table|hr)\b/i.test(s)) return s;
+    return renderBody(s);
+  }
+
   function renderPreview() {
     var t = els.title.value.trim();
-    var b = els.body.value;
-    els.preview.innerHTML = '<div class="moment-body">' +
-      "<h3>" + inline(t || "（无标题）") + "</h3>" +
-      (renderBody(b) || '<p style="color:var(--dimmer)">正文还是空的。</p>') +
-      "</div>";
+    var html = bodyToHtml(els.body.innerHTML);
+    var inner = "<h1>" + inline(t || "（无标题）") + "</h1>" +
+      (html || '<p style="color:var(--dimmer)">正文还是空的。</p>');
+    els.preview.innerHTML = '<div class="article">' + inner + "</div>" +
+      '<span class="preview-hint">鼠标停在这里，浮出整页效果</span>';
+    var fb = document.getElementById("float-body");
+    if (fb) fb.innerHTML = inner;
   }
 
   /* ---------- 表单 ---------- */
@@ -657,7 +915,7 @@
   function fillForm(item) {
     els.date.value = item ? (item.date || "") : new Date().toISOString().slice(0, 10);
     els.title.value = item ? (item.title || "") : "";
-    els.body.value = item ? (item.body || "") : "";
+    els.body.innerHTML = item ? bodyToHtml(item.body) : "";
     renderPreview();
   }
 
@@ -665,7 +923,7 @@
     return {
       date: els.date.value || new Date().toISOString().slice(0, 10),
       title: els.title.value.trim(),
-      body: els.body.value
+      body: els.body.innerHTML
     };
   }
 
@@ -731,7 +989,7 @@
       currentIndex = 0;
     }
     renderList();
-    putRemote(list, "动态：" + (item.title || "无标题"));
+    putRemote(list, "更新动态");
   }
 
   function deleteAt(index) {
@@ -745,7 +1003,7 @@
     currentIndex = -1;
     fillForm(null);
     renderList();
-    putRemote(list, "删除动态：" + title);
+    putRemote(list, "删除动态");
   }
 
   function doDelete() {
@@ -786,6 +1044,239 @@
 
   els.title.addEventListener("input", renderPreview);
   els.body.addEventListener("input", renderPreview);
+
+  /* ---------- 仓库设置：收进按钮 ---------- */
+
+  var connToggle = document.getElementById("conn-toggle");
+  var connPane = document.getElementById("conn-pane");
+
+  if (connToggle && connPane) {
+    connToggle.addEventListener("click", function () {
+      var open = connPane.hidden;
+      connPane.hidden = !open;
+      connToggle.setAttribute("aria-expanded", open ? "true" : "false");
+      connToggle.classList.toggle("is-on", open);
+    });
+  }
+
+  /* ---------- 富文本工具条 ---------- */
+
+  var toolbar = document.getElementById("rt-toolbar");
+  var savedRange = null;
+
+  function rememberRange() {
+    var sel = window.getSelection();
+    if (sel && sel.rangeCount && els.body.contains(sel.anchorNode)) {
+      savedRange = sel.getRangeAt(0).cloneRange();
+    }
+  }
+
+  function restoreRange() {
+    if (!savedRange) return;
+    var sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(savedRange);
+  }
+
+  function exec(cmd, value) {
+    els.body.focus();
+    restoreRange();
+    document.execCommand(cmd, false, value === undefined ? null : value);
+    rememberRange();
+    renderPreview();
+  }
+
+  if (toolbar) {
+    document.addEventListener("selectionchange", function () {
+      if (document.activeElement === els.body) rememberRange();
+    });
+
+    toolbar.addEventListener("mousedown", function (e) {
+      if (e.target.closest("button")) e.preventDefault();
+    });
+
+    toolbar.querySelectorAll("button[data-cmd]").forEach(function (b) {
+      b.addEventListener("click", function () { exec(b.dataset.cmd); });
+    });
+
+    var blockSel = toolbar.querySelector("[data-block]");
+    if (blockSel) {
+      blockSel.addEventListener("change", function () {
+        exec("formatBlock", "<" + blockSel.value + ">");
+      });
+    }
+
+    var sizeSel = toolbar.querySelector("[data-size]");
+    if (sizeSel) {
+      sizeSel.addEventListener("change", function () {
+        var px = sizeSel.value;
+        if (!px) return;
+        var sel = window.getSelection();
+        if (!sel || !sel.rangeCount || sel.isCollapsed) {
+          setStatus("先选中要改字号的文字。", "err");
+          return;
+        }
+        var range = sel.getRangeAt(0);
+        var span = document.createElement("span");
+        span.style.fontSize = px;
+        try {
+          span.appendChild(range.extractContents());
+          range.insertNode(span);
+          renderPreview();
+        } catch (err) {
+          setStatus("字号调整失败：" + err.message, "err");
+        }
+      });
+    }
+
+    var colorInput = document.getElementById("rt-color");
+    if (colorInput) {
+      colorInput.addEventListener("input", function () { exec("foreColor", colorInput.value); });
+    }
+
+    var linkBtn = document.getElementById("rt-link");
+    if (linkBtn) {
+      linkBtn.addEventListener("click", function () {
+        var href = window.prompt("链接地址", "https://");
+        if (href) exec("createLink", href);
+      });
+    }
+
+    var hrBtn = document.getElementById("rt-hr");
+    if (hrBtn) {
+      hrBtn.addEventListener("click", function () {
+        els.body.focus();
+        restoreRange();
+        document.execCommand("insertHorizontalRule", false, null);
+        renderPreview();
+      });
+    }
+
+    var clearBtn = document.getElementById("rt-clear");
+    if (clearBtn) {
+      clearBtn.addEventListener("click", function () { exec("removeFormat"); });
+    }
+
+    /* ---------- 插入图片：压缩后传到仓库 media/ ---------- */
+
+    var imgBtn = document.getElementById("rt-img");
+    var imgFile = document.getElementById("img-file");
+    var fileNameBox = document.getElementById("rt-file-name");
+
+    function noteFile(text, state) {
+      if (!fileNameBox) return;
+      fileNameBox.value = text;
+      fileNameBox.classList.remove("is-busy", "is-done", "is-err");
+      if (state) fileNameBox.classList.add(state);
+    }
+
+    if (imgBtn && imgFile) {
+      imgBtn.addEventListener("click", function () { imgFile.click(); });
+
+      imgFile.addEventListener("change", function () {
+        var files = Array.prototype.slice.call(imgFile.files || []);
+        if (!files.length) return;
+        setStatus("正在处理 " + files.length + " 张图片…");
+        files.reduce(function (chain, file) {
+          return chain.then(function () { return sendImage(file); });
+        }, Promise.resolve()).then(function () {
+          imgFile.value = "";
+          renderPreview();
+          setStatus("图片已插入。", "ok");
+        }).catch(function (err) {
+          setStatus("图片上传失败：" + (err && err.message ? err.message : err), "err");
+        });
+      });
+    }
+
+    function shrink(file) {
+      return new Promise(function (resolve, reject) {
+        var reader = new FileReader();
+        reader.onerror = function () { reject(new Error("读不了文件")); };
+        reader.onload = function () {
+          var img = new Image();
+          img.onerror = function () { reject(new Error("不是有效图片")); };
+          img.onload = function () {
+            var max = 1600;
+            var w = img.width;
+            var h = img.height;
+            if (w > max) { h = Math.round(h * max / w); w = max; }
+            var canvas = document.createElement("canvas");
+            canvas.width = w;
+            canvas.height = h;
+            canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+            var type = /png/i.test(file.type) ? "image/png" : "image/jpeg";
+            var data = canvas.toDataURL(type, 0.88);
+            resolve({ data: data, type: type });
+          };
+          img.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function sendImage(file) {
+      var label = file.name || "图片";
+      var safe = label.replace(/"/g, "");
+      noteFile("上传中… " + label, "is-busy");
+
+      return shrink(file).then(function (out) {
+        var base64 = out.data.split(",")[1];
+        var ext = out.type === "image/png" ? "png" : "jpg";
+        var name = "media/" + Date.now() + "-" + Math.random().toString(36).slice(2, 7) + "." + ext;
+        return window.BXAuth.upload(name, base64).then(function (res) {
+          var path = (res && res.path) || name;
+          els.body.focus();
+          restoreRange();
+          document.execCommand(
+            "insertHTML",
+            false,
+            '<img src="' + path + '" alt="' + safe + '" title="' + safe + '">'
+          );
+          rememberRange();
+          noteFile(label + " 已插入", "is-done");
+        });
+      }).catch(function (err) {
+        noteFile(label + " 上传失败", "is-err");
+        throw err;
+      });
+    }
+  }
+
+  /* ---------- 悬停浮出整页预览 ---------- */
+
+  var floatBox = document.getElementById("float-preview");
+  var previewBox = document.getElementById("preview");
+
+  if (floatBox && previewBox) {
+    var hoverTimer = null;
+    var closeTimer = null;
+
+    function openFloat() {
+      clearTimeout(closeTimer);
+      floatBox.hidden = false;
+      requestAnimationFrame(function () { floatBox.classList.add("is-open"); });
+    }
+
+    function closeFloat() {
+      floatBox.classList.remove("is-open");
+      setTimeout(function () {
+        if (!floatBox.classList.contains("is-open")) floatBox.hidden = true;
+      }, 200);
+    }
+
+    previewBox.addEventListener("mouseenter", function () {
+      hoverTimer = setTimeout(openFloat, 240);
+    });
+
+    previewBox.addEventListener("mouseleave", function () {
+      clearTimeout(hoverTimer);
+      closeTimer = setTimeout(closeFloat, 420);
+    });
+
+    floatBox.addEventListener("mouseenter", function () { clearTimeout(closeTimer); });
+    floatBox.addEventListener("mouseleave", function () { closeFloat(); });
+  }
 
   /* ---------- 启动 ---------- */
 

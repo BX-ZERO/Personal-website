@@ -44,6 +44,10 @@
     },
 
     login: function () {
+      if (location.protocol === "file:") {
+        window.alert("本地双击打开时登录走不通。要么用线上页面登录，要么在本机起一个 http 服务再访问，比如在站点目录执行 python -m http.server 8000，然后打开 http://localhost:8000/edit.html");
+        return;
+      }
       var back = location.href.split("#")[0];
       location.href = WORKER + "/login?to=" + encodeURIComponent(back);
     },
@@ -76,7 +80,8 @@
       });
     },
 
-    save: function (path, content, message) {      var ticket = get(TICKET_KEY);
+    save: function (path, content, message) {
+      var ticket = get(TICKET_KEY);
       if (!ticket) return Promise.reject(new Error("没有登录"));
       return fetch(WORKER + "/save", {
         method: "POST",
@@ -85,6 +90,24 @@
           authorization: "Bearer " + ticket
         },
         body: JSON.stringify({ path: path, content: content, message: message })
+      }).then(function (r) {
+        return r.json().then(function (data) {
+          if (!r.ok || data.error) throw new Error(data.error || ("HTTP " + r.status));
+          return data;
+        });
+      });
+    },
+
+    upload: function (path, base64, message) {
+      var ticket = get(TICKET_KEY);
+      if (!ticket) return Promise.reject(new Error("没有登录"));
+      return fetch(WORKER + "/upload", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          authorization: "Bearer " + ticket
+        },
+        body: JSON.stringify({ path: path, base64: base64, message: message })
       }).then(function (r) {
         return r.json().then(function (data) {
           if (!r.ok || data.error) throw new Error(data.error || ("HTTP " + r.status));
