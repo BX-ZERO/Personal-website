@@ -164,6 +164,27 @@
 
   .entry:hover { background: rgba(53, 216, 255, .05); }
 
+  .row-del {
+    margin-left: auto;
+    width: 22px;
+    height: 22px;
+    flex: none;
+    align-self: center;
+    border: 1px solid rgba(255, 255, 255, .16);
+    background: transparent;
+    color: #89929e;
+    font-size: 13px;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0;
+    transition: color .18s ease, border-color .18s ease, opacity .18s ease;
+  }
+
+  .entry:hover .row-del,
+  .row-del:focus-visible { opacity: 1; }
+
+  .row-del:hover { color: #ff7a1a; border-color: #ff7a1a; }
+
   .entry.is-on {
     background: rgba(53, 216, 255, .09);
     box-shadow: inset 2px 0 0 var(--cyan);
@@ -571,6 +592,7 @@
       return '<li class="entry' + (i === currentIndex ? " is-on" : "") + '" data-i="' + i + '">' +
         "<time>" + esc(String(m.date || "").replace(/-/g, ".")) + "</time>" +
         "<span>" + esc(m.title || "（无标题）") + "</span>" +
+        '<button class="row-del" type="button" data-del="' + i + '" title="删除这条">×</button>' +
         "</li>";
     }).join("");
   }
@@ -666,18 +688,22 @@
     putRemote(list, "动态：" + (item.title || "无标题"));
   }
 
-  function doDelete() {
-    if (currentIndex < 0 || currentIndex >= list.length) {
+  function deleteAt(index) {
+    if (index < 0 || index >= list.length) {
       setStatus("先在上面的列表里点一条要删的。", "err");
       return;
     }
-    var title = list[currentIndex].title || "无标题";
+    var title = list[index].title || "无标题";
     if (!window.confirm("删掉「" + title + "」？")) return;
-    list.splice(currentIndex, 1);
+    list.splice(index, 1);
     currentIndex = -1;
     fillForm(null);
     renderList();
     putRemote(list, "删除动态：" + title);
+  }
+
+  function doDelete() {
+    deleteAt(currentIndex);
   }
 
   /* ---------- 绑定 ---------- */
@@ -696,6 +722,12 @@
   els.reload.addEventListener("click", loadRemote);
 
   els.entries.addEventListener("click", function (e) {
+    var del = e.target.closest("[data-del]");
+    if (del) {
+      e.stopPropagation();
+      deleteAt(parseInt(del.dataset.del, 10));
+      return;
+    }
     var li = e.target.closest(".entry[data-i]");
     if (!li) return;
     var i = parseInt(li.dataset.i, 10);
