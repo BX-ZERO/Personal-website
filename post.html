@@ -4,7 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>BXZERO — 动态</title>
-<link rel="stylesheet" href="styles.css">
+<link rel="icon" href="img/bx-icon.ico" sizes="any">
+<link rel="icon" type="image/png" href="img/bx-icon.png">
+<link rel="apple-touch-icon" href="img/bx-icon.png">
+<link rel="stylesheet" href="styles.css?v=20261116p">
 <script>
 (function () {
   try {
@@ -131,7 +134,7 @@
   <article id="post"></article>
 </main>
 
-<script src="moments.js"></script>
+<script src="moments.js?v=20261116p"></script>
 <script>
 (function () {
   "use strict";
@@ -146,7 +149,7 @@
   function bodyToHtml(text) {
     var s = String(text || "");
     if (!s.trim()) return "";
-    if (/<\/?(p|div|h[1-6]|ul|ol|li|blockquote|pre|img|br|strong|em|span|a|table|hr|figure)\b/i.test(s)) {
+    if (/s\/?(p|div|h[1-6]|ul|ol|li|blockquote|pre|img|br|strong|em|span|a|table|hr|figure)\b/i.test(s)) {
       return s;
     }
     return s.split(/\n{2,}/).map(function (para) {

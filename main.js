@@ -12,14 +12,18 @@
 
   var navItems = Array.prototype.slice.call(document.querySelectorAll(".nav-item"));
   var views = Array.prototype.slice.call(document.querySelectorAll(".view"));
+  var lastView = "home";
 
   function show(name) {
+    if (name !== "post") lastView = name;
     views.forEach(function (v) {
       v.classList.toggle("is-on", v.id === "view-" + name);
     });
     navItems.forEach(function (a) {
       a.classList.toggle("is-active", a.dataset.view === name);
     });
+    if (name !== "home") peekHide();
+    if (name === "account") renderAccount();
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -29,7 +33,9 @@
       el.addEventListener("click", function (e) {
         if (e.metaKey || e.ctrlKey || e.shiftKey) return;
         e.preventDefault();
-        show(el.dataset.view);
+        var name = el.dataset.view;
+        if (location.hash === "#/" + name) show(name);
+        else location.hash = "#/" + name;
       });
     });
 
@@ -139,7 +145,7 @@
       soundBtn.setAttribute("aria-pressed", root.dataset.sound === "off" ? "true" : "false");
     }
     Array.prototype.slice
-      .call(document.querySelectorAll("audio, video"))
+      .call(document.querySelectorAll("audio:not([data-pl]), video"))
       .forEach(function (m) { m.muted = root.dataset.sound === "off"; });
   }
 
@@ -155,10 +161,9 @@
   }
 
   if (soundBtn) {
-    soundBtn.addEventListener("click", function () {
-      var next = root.dataset.sound === "off" ? "on" : "off";
-      applySound(next);
-      store(SOUND_KEY, next);
+    soundBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      if (window.BXPlayer) window.BXPlayer.togglePanel();
     });
   }
 
@@ -205,8 +210,8 @@
     return text.slice(0, limit) + "…";
   }
 
-  function postHref(index, title) {
-    return "post.html?i=" + index + "&t=" + encodeURIComponent(title || "");
+  function postHref(index) {
+    return "#/post/" + index;
   }
 
   function renderMoments() {
@@ -225,7 +230,6 @@
         '<div class="moment-body">' +
         '<h3><a class="moment-link" href="' + href + '">' + inline(m.title) + "</a></h3>" +
         (brief ? "<p>" + esc(brief) + "</p>" : "") +
-        '<a class="moment-more" href="' + href + '">阅读全文 →</a>' +
         "</div>" +
         "</li>";
     }).join("");
@@ -265,7 +269,8 @@
             kind: "post",
             title: o.item.title || "无标题",
             desc: excerpt(bodyToHtml(o.item.body), 150),
-            href: postHref(o.index, o.item.title)
+            href: postHref(o.index, o.item.title),
+            postIndex: o.index
           });
         });
     }
@@ -284,7 +289,7 @@
         (it.kind === "post" ? "" : ' target="_blank" rel="noopener"') + ">" + esc(it.title) + "</a></h4>"
       : "<h4>" + esc(it.title) + "</h4>";
     homeBody.innerHTML =
-      '<div class="info-item">' +
+      '<div class="info-item" data-i="' + i + '">' +
       '<div class="info-meta"><time>' + esc(it.date.replace(/-/g, ".")) + "</time>" +
       '<span class="info-kind">' + esc(KIND_LABEL[it.kind] || it.kind) + "</span></div>" +
       titleHtml +
@@ -344,44 +349,249 @@
     });
   }
 
+  /* ---------- 悬停预览：标题旁边浮出一小块文章开头 ---------- */
+
+  var peek = document.getElementById("peek");
+  var peekSheet = document.getElementById("peek-sheet");
+  var viewHome = document.getElementById("view-home");
+  var peekTimer = 0;
+  var peekAnchor = null;
+
+  function peekHide() {
+    if (!peek) return;
+    clearTimeout(peekTimer);
+    peekAnchor = null;
+    peek.classList.remove("is-on");
+    peek.setAttribute("aria-hidden", "true");
+  }
+
+  function peekShow(anchor, postIndex) {
+    var m = (window.BX_MOMENTS || [])[postIndex];
+    if (!peek || !peekSheet || !m) return;
+    peekSheet.innerHTML =
+      '<div class="peek-meta"><time>' + esc(String(m.date || "").replace(/-/g, ".")) + "</time>" +
+      '<span class="peek-kind">动态</span></div>' +
+      "<h5>" + inline(m.title || "（无标题）") + "</h5>" +
+      '<div class="peek-body">' + bodyToHtml(m.body) + "</div>" +
+      '<span class="peek-go">点击标题读全文 →</span>';
+
+    peekAnchor = anchor;
+    peek.classList.add("is-on");
+    peek.setAttribute("aria-hidden", "false");
+
+    var r = anchor.getBoundingClientRect();
+    var w = peek.offsetWidth;
+    var h = peek.offsetHeight;
+    var left = r.right + 22;
+    if (left + w > window.innerWidth - 14) left = r.left - 22 - w;
+    if (left < 14) left = 14;
+    var top = r.top - 14;
+    if (top + h > window.innerHeight - 14) top = window.innerHeight - 14 - h;
+    if (top < 14) top = 14;
+    peek.style.left = Math.round(left) + "px";
+    peek.style.top = Math.round(top) + "px";
+  }
+
+  function postIndexOf(el) {
+    if (!el || !el.closest || !el.closest(".info-link")) return -1;
+    var box = el.closest(".info-item");
+    if (!box) return -1;
+    var it = tlItems[Number(box.dataset.i)];
+    return it && it.kind === "post" ? it.postIndex : -1;
+  }
+
+  if (viewHome) {
+    viewHome.addEventListener("mouseover", function (e) {
+      var anchor = e.target.closest ? e.target.closest(".info-link") : null;
+      if (!anchor || anchor === peekAnchor) return;
+      var idx = postIndexOf(anchor);
+      if (idx < 0) return;
+      clearTimeout(peekTimer);
+      peekTimer = setTimeout(function () { peekShow(anchor, idx); }, 130);
+    });
+
+    viewHome.addEventListener("mouseout", function (e) {
+      var anchor = e.target.closest ? e.target.closest(".info-link") : null;
+      if (!anchor) return;
+      if (e.relatedTarget && anchor.contains(e.relatedTarget)) return;
+      peekHide();
+    });
+
+    window.addEventListener("scroll", peekHide, { passive: true });
+  }
+
   renderHome();
   renderTools();
 
-  /* ---------- 背景音乐（没有播放器界面，只用音量按钮管开关） ---------- */
+  /* ---------- 文章视图：改 hash 不换页，音乐就不会断 ---------- */
+
+  var postBody = document.getElementById("post-body");
+  var postBack = document.getElementById("post-back");
+  var BASE_TITLE = document.title;
+
+  function renderPost(index) {
+    var data = window.BX_MOMENTS;
+    if (!postBody) return false;
+    if (!Array.isArray(data) || !data[index]) {
+      postBody.innerHTML = '<p class="post-hint">这条动态不在了。</p>';
+      document.title = BASE_TITLE;
+      return false;
+    }
+    var m = data[index];
+    document.title = BASE_TITLE + " — " + (m.title || "动态");
+    postBody.innerHTML =
+      '<div class="post-date">' + esc(String(m.date || "").replace(/-/g, ".")) + "</div>" +
+      '<h1 class="post-title">' + inline(m.title || "（无标题）") + "</h1>" +
+      '<div class="article">' + bodyToHtml(m.body) + "</div>";
+    return true;
+  }
+
+  function route() {
+    var h = location.hash || "";
+    var post = /^#\/post\/(\d+)$/.exec(h);
+    if (post) {
+      var ok = renderPost(parseInt(post[1], 10));
+      show(ok ? "post" : "moments");
+      return;
+    }
+    var name = (/^#\/(home|moments|tools|account)$/.exec(h) || [])[1];
+    if (!name) {
+      name = "home";
+      if (h !== "#/home") history.replaceState(null, "", "#/home");
+    }
+    document.title = BASE_TITLE;
+    show(name);
+  }
+
+  if (postBack) {
+    postBack.addEventListener("click", function (e) {
+      e.preventDefault();
+      history.replaceState(null, "", "#/" + (lastView || "home"));
+      route();
+    });
+  }
+
+  window.addEventListener("hashchange", route);
+  route();
+
+  /* ---------- 背景音乐播放器 ---------- */
+
+  var VOL_KEY = "bxz-volume";
+
+  var ICON_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>';
+  var ICON_PAUSE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>';
+  var ICON_PREV = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg>';
+  var ICON_NEXT = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 5h2v14h-2zM4 5l11 7-11 7z"/></svg>';
 
   (function music() {
+    var box = document.getElementById("player");
+    var nameEl = document.getElementById("pl-name");
+    var playBtn = document.getElementById("pl-play");
+    var prevBtn = document.getElementById("pl-prev");
+    var nextBtn = document.getElementById("pl-next");
+    var volEl = document.getElementById("pl-vol");
+    var pctEl = document.getElementById("pl-pct");
+    var spkEl = document.getElementById("pl-spk");
+    if (!box) return;
+
     var cfg = HOME.music || {};
     var tracks = Array.isArray(cfg.tracks)
       ? cfg.tracks.filter(function (t) { return t && t.src; })
       : [];
-    if (!tracks.length) return;
+    if (!tracks.length) {
+      if (soundBtn) soundBtn.hidden = true;
+      box.hidden = true;
+      return;
+    }
 
     var audio = document.createElement("audio");
     audio.preload = "auto";
-    audio.volume = typeof cfg.volume === "number" ? Math.max(0, Math.min(1, cfg.volume)) : 0.35;
-    audio.muted = root.dataset.sound === "off";
+    audio.setAttribute("data-pl", "1");
     audio.style.display = "none";
     document.body.appendChild(audio);
 
     var index = 0;
+    var savedVol = Number(load(VOL_KEY));
+    var vol = isFinite(savedVol) && savedVol >= 0
+      ? Math.max(0, Math.min(1, savedVol))
+      : (typeof cfg.volume === "number" ? cfg.volume : 0.35);
+    audio.volume = vol;
 
-    function load(k) {
+    function load2(k) {
       index = (k + tracks.length) % tracks.length;
       audio.src = tracks[index].src;
+    }
+
+    function refresh() {
+      if (nameEl) nameEl.textContent = tracks[index].title || ("第 " + (index + 1) + " 首");
+      if (playBtn) playBtn.innerHTML = audio.paused ? ICON_PLAY : ICON_PAUSE;
+      if (prevBtn) prevBtn.innerHTML = ICON_PREV;
+      if (nextBtn) nextBtn.innerHTML = ICON_NEXT;
+      var pct = Math.round(vol * 100);
+      if (volEl) volEl.value = String(pct);
+      if (pctEl) pctEl.textContent = pct + "%";
+      if (spkEl) spkEl.classList.toggle("is-mute", pct === 0 || audio.muted);
+      root.dataset.sound = audio.paused ? "off" : "on";
+      if (soundBtn) soundBtn.setAttribute("aria-pressed", audio.paused ? "true" : "false");
     }
 
     function play() {
       var p = audio.play();
       if (p && p.catch) p.catch(function () { /* 浏览器拦下了，等一次交互 */ });
+      refresh();
     }
 
     audio.addEventListener("ended", function () {
-      load(index + 1);
+      load2(index + 1);
       play();
     });
+    audio.addEventListener("play", refresh);
+    audio.addEventListener("pause", refresh);
 
-    load(0);
+    load2(0);
+    refresh();
     play();
+
+    if (playBtn) playBtn.addEventListener("click", function () {
+      if (audio.paused) play();
+      else audio.pause();
+    });
+    if (prevBtn) prevBtn.addEventListener("click", function () {
+      load2(index - 1);
+      play();
+    });
+    if (nextBtn) nextBtn.addEventListener("click", function () {
+      load2(index + 1);
+      play();
+    });
+    if (volEl) volEl.addEventListener("input", function () {
+      vol = Math.max(0, Math.min(1, Number(volEl.value) / 100));
+      audio.volume = vol;
+      store(VOL_KEY, String(vol));
+      refresh();
+    });
+
+    window.BXPlayer = {
+      togglePanel: function () {
+        if (box.hidden) {
+          box.hidden = false;
+          refresh();
+        } else {
+          box.hidden = true;
+        }
+      }
+    };
+
+    document.addEventListener("click", function (e) {
+      if (box.hidden) return;
+      if (box.contains(e.target)) return;
+      if (soundBtn && soundBtn.contains(e.target)) return;
+      box.hidden = true;
+    });
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && !box.hidden) box.hidden = true;
+    });
 
     ["pointerdown", "keydown", "touchstart"].forEach(function (evt) {
       var once = function () {
@@ -392,19 +602,157 @@
     });
   })();
 
+  /* ---------- 账号 ---------- */
+
+  var accBox = document.getElementById("acc-box");
+  var accLoaded = false;
+
+  var ACC_EYE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<path d="M1.8 12S5.4 5.6 12 5.6 22.2 12 22.2 12 18.6 18.4 12 18.4 1.8 12 1.8 12Z"/>' +
+    '<circle cx="12" cy="12" r="2.9"/>' +
+    '<path class="pw-slash" d="M4.2 19.8 19.8 4.2"/></svg>';
+
+  function accSignedOut() {
+    if (!accBox) return;
+    accBox.innerHTML =
+      '<p class="acc-note">请输入密钥</p>' +
+      '<div class="pw">' +
+      '<input type="password" id="acc-pass" autocomplete="current-password" placeholder="请输入密钥">' +
+      '<button class="pw-eye" id="acc-eye" type="button" aria-label="显示密码" aria-pressed="false">' + ACC_EYE + "</button>" +
+      "</div>" +
+      '<p class="acc-msg" id="acc-msg"></p>' +
+      '<div class="acc-actions"><button class="m-btn m-btn-main" id="acc-login" type="button">进入</button></div>';
+    bindAccGate();
+    accLoaded = true;
+  }
+
+  function bindAccGate() {
+    var input = document.getElementById("acc-pass");
+    var eye = document.getElementById("acc-eye");
+    var msg = document.getElementById("acc-msg");
+    var btn = document.getElementById("acc-login");
+
+    if (eye && input) {
+      eye.addEventListener("click", function () {
+        var show = input.type === "password";
+        input.type = show ? "text" : "password";
+        eye.classList.toggle("is-on", show);
+        eye.setAttribute("aria-pressed", show ? "true" : "false");
+        eye.setAttribute("aria-label", show ? "隐藏密码" : "显示密码");
+        input.focus();
+      });
+    }
+
+    function go() {
+      var pw = (input && input.value ? input.value : "").trim();
+      if (!pw) {
+        msg.textContent = "先填密钥。";
+        msg.className = "acc-msg err";
+        return;
+      }
+      msg.textContent = "正在核对…";
+      msg.className = "acc-msg";
+      window.BXAuth.loginWithPassword(pw).then(function (data) {
+        /* 票已经在手里，直接按登录态渲染，不等 /me 那一次网络往返 */
+        accSignedIn({ ok: true, login: (data && data.login) || "" });
+        if (editEntry) editEntry.hidden = false;
+        if (editHome) editHome.hidden = false;
+      }).catch(function (e) {
+        msg.textContent = (e && e.message) ? e.message : "密钥不对";
+        msg.className = "acc-msg err";
+        if (input) input.select();
+      });
+    }
+
+    if (btn) btn.addEventListener("click", go);
+    if (input) input.addEventListener("keydown", function (e) { if (e.key === "Enter") go(); });
+  }
+
+  function accSignedIn(who) {
+    if (!accBox) return;
+    var name = (who && who.login) || "BX-ZERO";
+    accBox.innerHTML =
+      '<div class="acc-card"><div class="acc-who">' +
+      '<div class="acc-name">' + esc(String(name).toUpperCase()) + "</div>" +
+      '<div class="acc-sub">已登录，可以改动态与主页信息了。</div>' +
+      "</div></div>" +
+      '<div class="acc-actions">' +
+      '<a class="m-btn m-btn-main" href="edit.html">进入写作台</a>' +
+      '<a class="m-btn" href="home-edit.html">改主页信息</a>' +
+      '<button class="m-btn" id="acc-logout" type="button">退出登录</button>' +
+      "</div>" +
+      '<div class="acc-stats" id="acc-stats">' +
+      '<div class="acc-stat"><b>—</b><span>总访问</span></div>' +
+      '<div class="acc-stat"><b>—</b><span>今天</span></div>' +
+      '<div class="acc-stat"><b>—</b><span>独立访客</span></div>' +
+      "</div>";
+    accLoaded = true;
+    loadStats();
+    var out = document.getElementById("acc-logout");
+    if (out) {
+      out.addEventListener("click", function () {
+        accSignedOut();
+        if (window.BXAuth) window.BXAuth.logout();
+        syncOwner();
+      });
+    }
+  }
+
+  function renderAccount(force) {
+    if (!accBox) return;
+    if (accLoaded && !force) return;
+    if (!window.BXAuth) {
+      accBox.innerHTML = '<p class="acc-note">auth.js 没加载，登录不可用。</p>';
+      return;
+    }
+    /* 没有票就不用发请求，直接按未登录渲染 */
+    if (window.BXAuth.signedIn && !window.BXAuth.signedIn()) {
+      accSignedOut();
+      return;
+    }
+    window.BXAuth.me().then(function (who) {
+      if (who && who.ok) accSignedIn(who);
+      else accSignedOut();
+    }).catch(function () { accSignedOut(); });
+  }
 
   /* ---------- 站主入口 ---------- */
 
   var editEntry = document.getElementById("edit-entry");
   var editHome = document.getElementById("edit-home");
 
-  if (window.BXAuth) {
+  function syncOwner() {
+    if (!window.BXAuth) return;
     window.BXAuth.me().then(function (who) {
-      if (!who || !who.ok) return;
-      if (editEntry) editEntry.hidden = false;
-      if (editHome) editHome.hidden = false;
-      var accLink = document.getElementById("account-link");
-      if (accLink) accLink.classList.add("is-on");
+      var ok = !!(who && who.ok);
+      if (editEntry) editEntry.hidden = !ok;
+      if (editHome) editHome.hidden = !ok;
+    }).catch(function () { /* 忽略 */ });
+  }
+
+  /* ---------- 访问统计 ---------- */
+
+  function fmtNum(n) {
+    var v = Math.round(Number(n) || 0);
+    return String(v).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  }
+
+  function loadStats() {
+    var box = document.getElementById("acc-stats");
+    if (!box || !window.BXAuth || !window.BXAuth.stats) return;
+    window.BXAuth.stats().then(function (d) {
+      var nums = box.querySelectorAll("b");
+      if (nums.length < 3) return;
+      nums[0].textContent = fmtNum(d.total);
+      nums[1].textContent = fmtNum(d.today);
+      nums[2].textContent = fmtNum(d.uv);
+    }).catch(function () {
+      box.classList.add("is-off");
     });
   }
+
+  syncOwner();
+
+  /* 站主带着票打开页面时不计数，游客每次打开汇报一次 */
+  if (window.BXAuth && window.BXAuth.hit) window.BXAuth.hit();
 })();

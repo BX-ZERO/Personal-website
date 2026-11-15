@@ -3,8 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>BXZERO — 个人主页</title>
-<link rel="stylesheet" href="styles.css">
+<title>BXZERO</title>
+<link rel="icon" href="img/bx-icon.ico" sizes="any">
+<link rel="icon" type="image/png" href="img/bx-icon.png">
+<link rel="apple-touch-icon" href="img/bx-icon.png">
+<link rel="stylesheet" href="styles.css?v=20261116p">
 </head>
 <body>
 
@@ -21,34 +24,57 @@
 <div class="frame" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
 
 <header class="nav">
-  <a class="brand" href="#" data-view="home" aria-label="BXZERO">
+  <a class="brand" href="#/home" data-view="home" aria-label="BXZERO">
     <span class="brand-word">BX-ZERO</span>
   </a>
 
   <nav class="nav-list">
-    <a class="nav-item is-active" href="#" data-view="home">
+    <a class="nav-item is-active" href="#/home" data-view="home">
       <span class="en">INDEX</span>
       <span class="cn">首页</span>
     </a>
-    <a class="nav-item" href="#" data-view="moments">
+    <a class="nav-item" href="#/moments" data-view="moments">
       <span class="en">MOMENTS</span>
       <span class="cn">动态</span>
     </a>
-    <a class="nav-item" href="#" data-view="tools">
+    <a class="nav-item" href="#/tools" data-view="tools">
       <span class="en">TOOLBOX</span>
       <span class="cn">工具箱</span>
+    </a>
+    <a class="nav-item" href="#/account" data-view="account">
+      <span class="en">ACCOUNT</span>
+      <span class="cn">账号</span>
     </a>
   </nav>
 
   <div class="nav-tools">
-    <button class="tool-btn" id="sound-toggle" type="button" aria-pressed="false" title="声音开关">
+    <button class="tool-btn" id="sound-toggle" type="button" aria-pressed="false" title="音乐">
       <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path class="spk" d="M4 9.2h3.6L13 5v14l-5.4-4.2H4z"></path>
-        <path class="wave" d="M16.2 8.6a4.8 4.8 0 0 1 0 6.8"></path>
-        <path class="wave" d="M18.8 6a8.4 8.4 0 0 1 0 12"></path>
+        <g class="spk">
+          <ellipse cx="8.4" cy="16.8" rx="3.1" ry="2.4"></ellipse>
+          <rect x="10.6" y="4.4" width="1.8" height="12.6" rx="0.5"></rect>
+          <path d="M12.4 4.4 19.4 6.2v3.5l-7-1.8z"></path>
+        </g>
         <line class="slash" x1="4.6" y1="19.4" x2="19.4" y2="4.6"></line>
       </svg>
     </button>
+    <div class="player" id="player" hidden>
+      <span class="pl-name" id="pl-name">正在载入…</span>
+      <div class="pl-row">
+        <button class="pl-btn" id="pl-prev" type="button" title="上一首"></button>
+        <button class="pl-btn pl-play" id="pl-play" type="button" title="播放 / 暂停"></button>
+        <button class="pl-btn" id="pl-next" type="button" title="下一首"></button>
+      </div>
+      <div class="pl-vol">
+        <svg class="pl-spk" id="pl-spk" viewBox="0 0 24 24" aria-hidden="true">
+          <path class="spk" d="M4 9.2h3.6L13 5v14l-5.4-4.2H4z"></path>
+          <path class="wave" d="M16.2 8.6a4.8 4.8 0 0 1 0 6.8"></path>
+          <line class="slash" x1="4.6" y1="19.4" x2="19.4" y2="4.6"></line>
+        </svg>
+        <input type="range" id="pl-vol" min="0" max="100" step="1" value="35" aria-label="音量">
+        <span class="pl-pct" id="pl-pct">35%</span>
+      </div>
+    </div>
     <button class="tool-btn" id="theme-toggle" type="button" aria-pressed="false" title="夜间 / 白天">
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <circle class="sun-core" cx="12" cy="12" r="4.4"></circle>
@@ -65,12 +91,6 @@
         <path class="moon" d="M15.6 3.4a8.6 8.6 0 1 0 5 11.6 7 7 0 0 1-5-11.6z"></path>
       </svg>
     </button>
-    <a class="tool-btn" id="account-link" href="account.html" title="账号" aria-label="账号">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="12" cy="8.6" r="3.5"></circle>
-        <path d="M4.8 20.4c0-3.7 3.2-6 7.2-6s7.2 2.3 7.2 6"></path>
-      </svg>
-    </a>
   </div>
 </header>
 
@@ -90,6 +110,10 @@
         <aside class="info-nav" id="home-nav"></aside>
         <article class="info-body" id="home-body"></article>
       </div>
+    </div>
+
+    <div class="peek" id="peek" aria-hidden="true">
+      <div class="peek-sheet" id="peek-sheet"></div>
     </div>
 
   </section>
@@ -129,16 +153,40 @@
 
   </section>
 
+  <!-- ================= 账号 ================= -->
+  <section class="view" id="view-account">
+
+    <div class="slab">
+      <div class="slab-head">
+        <h2><span class="en">ACCOUNT</span><span class="cn">账号</span></h2>
+        <span class="slab-line"></span>
+      </div>
+      <div class="acc" id="acc-box"></div>
+    </div>
+
+  </section>
+
+  <!-- ================= 动态详情 ================= -->
+  <section class="view" id="view-post">
+
+    <article class="post-wrap">
+      <a class="post-back" id="post-back" href="#">← 回到上一页</a>
+      <div id="post-body"></div>
+    </article>
+
+  </section>
+
 </main>
 
 <footer class="foot">
   <p>BXZERO · <span id="year">2026</span></p>
   <img class="badge" src="img/dsh-badge.png" width="121" height="20" alt="powered by dsh">
+  <span class="ver">v1.0.1</span>
 </footer>
 
-<script src="home.js"></script>
-<script src="moments.js"></script>
-<script src="auth.js"></script>
-<script src="main.js"></script>
+<script src="home.js?v=20261116p"></script>
+<script src="moments.js?v=20261116p"></script>
+<script src="auth.js?v=20261116p"></script>
+<script src="main.js?v=20261116p"></script>
 </body>
 </html>

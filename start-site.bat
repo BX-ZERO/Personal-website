@@ -4,7 +4,7 @@ cd /d "%~dp0"
 
 set PY=C:\Users\55231\AppData\Local\Programs\Python\Python311\python.exe
 set PORT=8123
-set PAGE=account.html
+set PAGE=index.html
 if not "%~1"=="" set PAGE=%~1
 
 netstat -ano | findstr /c:":%PORT% " | findstr /c:"LISTENING" >nul

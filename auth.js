@@ -50,11 +50,20 @@
     }
   })();
 
+  /* /me 的结果在这里存五分钟，免得每次切页都等一次网络 */
+  var meCache = null;
+  var meAt = 0;
+
   var auth = {
     worker: WORKER,
 
     ticket: function () {
       return get(TICKET_KEY);
+    },
+
+    /* 有没有票，页面先用这个判断，没有就直接按未登录渲染，不发请求 */
+    signedIn: function () {
+      return !!get(TICKET_KEY);
     },
 
     login: function () {
@@ -84,6 +93,8 @@
         return r.json().then(function (data) {
           if (!r.ok || !data.ticket) throw new Error(data.error || ("HTTP " + r.status));
           put(TICKET_KEY, data.ticket);
+          meCache = null;
+          meAt = 0;
           return data;
         });
       });
@@ -91,13 +102,17 @@
 
     logout: function () {
       drop(TICKET_KEY);
+      meCache = null;
+      meAt = 0;
       location.reload();
     },
 
-    me: function () {
+    me: function (force) {
       var ticket = get(TICKET_KEY);
       if (!ticket) return Promise.resolve({ ok: false, reason: "none" });
-      return fetch(WORKER + "/me", {
+      /* 五分钟内复用上一次结果，切页、切视图不再重复打 Worker */
+      if (!force && meCache && Date.now() - meAt < 300000) return meCache;
+      meCache = fetch(WORKER + "/me", {
         headers: { authorization: "Bearer " + ticket }
       })
         .then(function (r) {
@@ -106,8 +121,11 @@
           });
         })
         .catch(function (e) {
+          meCache = null;
           return { ok: false, status: 0, reason: "连不上 Worker" };
         });
+      meAt = Date.now();
+      return meCache;
     },
 
     read: function (path) {
@@ -154,6 +172,60 @@
       }).then(function (r) {
         return r.json().then(function (data) {
           if (!r.ok || data.error) throw new Error(data.error || ("HTTP " + r.status));
+          return data;
+        });
+      });
+    },
+
+    cleanup: function (opts) {
+      var ticket = get(TICKET_KEY);
+      if (!ticket) return Promise.reject(new Error("没有登录"));
+      var body = opts || {};
+      return fetch(WORKER + "/cleanup", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          authorization: "Bearer " + ticket
+        },
+        body: JSON.stringify({
+          dryRun: body.dryRun === true,
+          minAgeHours: body.minAgeHours || 24
+        })
+      }).then(function (r) {
+        return r.json().then(function (data) {
+          if (!r.ok || data.error) throw new Error(data.error || ("HTTP " + r.status));
+          return data;
+        });
+      });
+    },
+
+    /* 访问统计：站主自己带着票打开页面时不计数 */
+    hit: function () {
+      if (get(TICKET_KEY)) return Promise.resolve({ ok: false, skipped: "owner" });
+      try {
+        return fetch(WORKER + "/hit", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: "{}",
+          keepalive: true
+        })
+          .then(function (r) {
+            return r.json().catch(function () { return { ok: r.ok }; });
+          })
+          .catch(function () { return { ok: false }; });
+      } catch (e) {
+        return Promise.resolve({ ok: false });
+      }
+    },
+
+    stats: function () {
+      var ticket = get(TICKET_KEY);
+      if (!ticket) return Promise.reject(new Error("没有登录"));
+      return fetch(WORKER + "/stats", {
+        headers: { authorization: "Bearer " + ticket }
+      }).then(function (r) {
+        return r.json().then(function (data) {
+          if (!r.ok || !data.ok) throw new Error(data.error || ("HTTP " + r.status));
           return data;
         });
       });
