@@ -709,6 +709,29 @@ main {
   color: #8e9aa8;
 }
 
+.moment-body p + p { margin-top: 10px; }
+
+.moment-body strong { color: var(--title); font-weight: 700; }
+
+.moment-body a {
+  color: var(--cyan);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(53, 216, 255, .35);
+}
+
+.moment-body a:hover { border-bottom-color: var(--cyan); }
+
+.moment-body code {
+  font-family: var(--font-en);
+  font-size: 12.5px;
+  padding: 1px 6px;
+  background: rgba(53, 216, 255, .08);
+  border: 1px solid rgba(53, 216, 255, .18);
+  color: #cfe9f5;
+}
+
+.moment-empty p { color: var(--dimmer); }
+
 @media (max-width: 720px) {
   .moment { flex-direction: column; gap: 8px; }
   .moment-date { width: auto; padding-top: 0; }

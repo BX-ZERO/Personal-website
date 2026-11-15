@@ -161,4 +161,49 @@
       store(SOUND_KEY, next);
     });
   }
+
+  /* ---------- 动态渲染（数据在 moments.js） ---------- */
+
+  var momentList = document.getElementById("moments-list");
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+    });
+  }
+
+  function inline(s) {
+    return esc(s)
+      .replace(/`([^`]+)`/g, "<code>$1</code>")
+      .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+      .replace(/\*([^*]+)\*/g, "<em>$1</em>")
+      .replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  }
+
+  function renderBody(text) {
+    return String(text || "")
+      .split(/\n{2,}/)
+      .filter(function (b) { return b.trim(); })
+      .map(function (block) {
+        return "<p>" + inline(block).replace(/\n/g, "<br>") + "</p>";
+      })
+      .join("");
+  }
+
+  function renderMoments() {
+    if (!momentList) return;
+    var data = window.BX_MOMENTS;
+    if (!Array.isArray(data) || !data.length) return;
+    var sorted = data.slice().sort(function (a, b) {
+      return String(b.date || "").localeCompare(String(a.date || ""));
+    });
+    momentList.innerHTML = sorted.map(function (m) {
+      return '<li class="moment">' +
+        '<time class="moment-date" datetime="' + esc(m.date) + '">' + esc(String(m.date).replace(/-/g, ".")) + '</time>' +
+        '<div class="moment-body"><h3>' + inline(m.title) + "</h3>" + renderBody(m.body) + "</div>" +
+        "</li>";
+    }).join("");
+  }
+
+  renderMoments();
 })();
