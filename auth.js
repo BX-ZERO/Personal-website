@@ -44,7 +44,8 @@
     },
 
     login: function () {
-      location.href = WORKER + "/login";
+      var back = location.href.split("#")[0];
+      location.href = WORKER + "/login?to=" + encodeURIComponent(back);
     },
 
     logout: function () {
