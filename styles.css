@@ -2319,7 +2319,7 @@ html[data-theme="light"] .player {
     color: var(--dimmer);
   }
 
-  .rt-body img, .article img { max-width: min(100%, 480px); max-height: 520px; height: auto; display: block; margin: 16px 0; }
+  .rt-body img, .article img { max-width: min(100%, 480px); max-height: 520px; height: auto; display: block; margin: 16px auto; }
 
   /* 编辑区里不渲染图片本身，只留一枚标签 */
   .rt-body img { display: none; }
