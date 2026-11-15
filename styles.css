@@ -1397,7 +1397,8 @@ html[data-theme="light"] .m-field textarea { background: #fff; }
 
 .article img {
   display: block;
-  max-width: min(100%, 560px);
+  max-width: min(100%, 480px);
+  max-height: 520px;
   height: auto;
   margin: 22px auto;
   border: 1px solid var(--line);
@@ -2312,7 +2313,7 @@ html[data-theme="light"] .player {
     color: var(--dimmer);
   }
 
-  .rt-body img, .article img { max-width: min(100%, 560px); height: auto; display: block; margin: 16px 0; }
+  .rt-body img, .article img { max-width: min(100%, 480px); max-height: 520px; height: auto; display: block; margin: 16px 0; }
 
   /* 编辑区里不渲染图片本身，只留一枚标签 */
   .rt-body img { display: none; }
