@@ -7,7 +7,7 @@
 <link rel="icon" href="img/bx-icon.ico" sizes="any">
 <link rel="icon" type="image/png" href="img/bx-icon.png">
 <link rel="apple-touch-icon" href="img/bx-icon.png">
-<link rel="stylesheet" href="styles.css?v=20261116v">
+<link rel="stylesheet" href="styles.css?v=20261116w">
 </head>
 <body>
 
@@ -304,6 +304,16 @@
       <button class="btn" id="btn-sweep" type="button">清理未引用图片</button>
       <span class="status" id="status"></span>
     </div>
+    <!-- 悬停浮出整页预览 -->
+    <div class="float-preview" id="float-preview" hidden>
+      <div class="float-sheet">
+        <div class="float-head">
+          <span class="float-tag">PREVIEW 效果</span>
+          <span class="float-close" id="float-close">关闭</span>
+        </div>
+        <div class="float-scroll"><div id="float-body"></div></div>
+      </div>
+    </div>
   </section>
 
   <div class="grid2">
@@ -429,10 +439,10 @@
   <span class="ver">v1.0.1</span>
 </footer>
 
-<script src="home.js?v=20261116v"></script>
-<script src="moments.js?v=20261116v"></script>
-<script src="auth.js?v=20261116v"></script>
-<script src="main.js?v=20261116v"></script>
+<script src="home.js?v=20261116w"></script>
+<script src="moments.js?v=20261116w"></script>
+<script src="auth.js?v=20261116w"></script>
+<script src="main.js?v=20261116w"></script>
 <script>
 (function () {
   "use strict";
@@ -1263,12 +1273,20 @@
     });
   }
 
+  function markImages(html) {
+    var n = 0;
+    return String(html || "").replace(/<img\b[^>]*>/gi, function () {
+      n += 1;
+      return '<span class="img-mark">图片' + n + "</span>";
+    });
+  }
+
   function renderPreview() {
     var t = els.title.value.trim();
     var html = bodyToHtml(readBodyHtml());
     var inner = "<h1>" + inline(t || "（无标题）") + "</h1>" +
       (html || '<p style="color:var(--dimmer)">正文还是空的。</p>');
-    els.preview.innerHTML = '<div class="article">' + inner + "</div>";
+    els.preview.innerHTML = '<div class="article">' + markImages(inner) + "</div>";
     var fb = document.getElementById("float-body");
     if (fb) fb.innerHTML = inner;
   }
@@ -1690,6 +1708,14 @@
     if (floatSheet) {
       floatSheet.addEventListener("mouseenter", function () { clearTimeout(closeTimer); });
       floatSheet.addEventListener("mouseleave", function () { closeFloat(); });
+    }
+
+    var floatClose = document.getElementById("float-close");
+    if (floatClose) {
+      floatClose.addEventListener("click", function (e) {
+        e.stopPropagation();
+        closeFloat();
+      });
     }
   }
 

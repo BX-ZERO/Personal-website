@@ -2760,3 +2760,14 @@ html[data-theme="light"] .player {
   inset: auto;
   z-index: auto;
 }
+
+/* 预览里不显示真图，只用编号占位；整页浮层里才是真图 */
+.img-mark {
+  display: inline-block;
+  margin: 4px 6px 4px 0;
+  padding: 3px 10px;
+  border: 1px dashed var(--line-strong);
+  font-size: 12px;
+  letter-spacing: .04em;
+  color: var(--dimmer);
+}
