@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BXZERO — 编辑</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- 背景：两层缓慢推拉 + 网格 + 扫描线 -->
+<div class="bg" aria-hidden="true">
+  <div class="bg-layer layer-a"></div>
+  <div class="bg-layer layer-b"></div>
+  <div class="grid"></div>
+  <div class="scan"></div>
+  <div class="vignette"></div>
+</div>
+
+<!-- 四角装饰框 -->
+<div class="frame" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+
+<header class="nav">
+  <a class="brand" href="#" data-view="home" aria-label="BXZERO">
+    <span class="brand-word">BX-ZERO</span>
+  </a>
+
+  <nav class="nav-list">
+    <a class="nav-item is-active" href="#" data-view="home">
+      <span class="en">INDEX</span>
+      <span class="cn">首页</span>
+    </a>
+    <a class="nav-item" href="#" data-view="moments">
+      <span class="en">MOMENTS</span>
+      <span class="cn">动态</span>
+    </a>
+    <a class="nav-item" href="#" data-view="tools">
+      <span class="en">TOOLBOX</span>
+      <span class="cn">工具箱</span>
+    </a>
+  </nav>
+
+  <div class="nav-tools">
+    <button class="tool-btn" id="sound-toggle" type="button" aria-pressed="false" title="声音开关">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path class="spk" d="M4 9.2h3.6L13 5v14l-5.4-4.2H4z"></path>
+        <path class="wave" d="M16.2 8.6a4.8 4.8 0 0 1 0 6.8"></path>
+        <path class="wave" d="M18.8 6a8.4 8.4 0 0 1 0 12"></path>
+        <line class="slash" x1="4.6" y1="19.4" x2="19.4" y2="4.6"></line>
+      </svg>
+    </button>
+    <button class="tool-btn" id="theme-toggle" type="button" aria-pressed="false" title="夜间 / 白天">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle class="sun-core" cx="12" cy="12" r="4.4"></circle>
+        <g class="sun-rays">
+          <line x1="12" y1="2.4" x2="12" y2="5.2"></line>
+          <line x1="12" y1="18.8" x2="12" y2="21.6"></line>
+          <line x1="2.4" y1="12" x2="5.2" y2="12"></line>
+          <line x1="18.8" y1="12" x2="21.6" y2="12"></line>
+          <line x1="5.2" y1="5.2" x2="7.2" y2="7.2"></line>
+          <line x1="16.8" y1="16.8" x2="18.8" y2="18.8"></line>
+          <line x1="18.8" y1="5.2" x2="16.8" y2="7.2"></line>
+          <line x1="7.2" y1="16.8" x2="5.2" y2="18.8"></line>
+        </g>
+        <path class="moon" d="M15.6 3.4a8.6 8.6 0 1 0 5 11.6 7 7 0 0 1-5-11.6z"></path>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<main>
+
+  <!-- ================= 首页：内容先空着 ================= -->
+  <section class="view is-on" id="view-home"></section>
+
+  <!-- ================= 动态 ================= -->
+  <section class="view" id="view-moments">
+
+    <div class="slab">
+      <div class="slab-head">
+        <h2><span class="en">MOMENTS</span><span class="cn">动态</span></h2>
+        <span class="slab-line"></span>
+        <button class="edit-link" id="edit-entry" type="button" hidden>NEW</button>
+      </div>
+
+      <form class="m-editor" id="m-editor" hidden>
+        <div class="m-row">
+          <label class="m-field m-field-date">
+            <span>日期</span>
+            <input type="text" id="m-date" placeholder="2026-11-15" autocomplete="off">
+          </label>
+          <label class="m-field">
+            <span>标题</span>
+            <input type="text" id="m-title" placeholder="写一句能当标题的话" autocomplete="off">
+          </label>
+        </div>
+        <label class="m-field">
+          <span>正文</span>
+          <textarea id="m-body" rows="6" placeholder="空行分段，支持 `代码`、**粗体**、[文字](链接)"></textarea>
+        </label>
+        <div class="m-actions">
+          <button type="submit" class="m-btn m-btn-main" id="m-save">保存到仓库</button>
+          <button type="button" class="m-btn" id="m-cancel">取消</button>
+          <button type="button" class="m-btn m-btn-warn" id="m-remove" hidden>删除这条</button>
+          <span class="m-status" id="m-status"></span>
+        </div>
+      </form>
+
+      <ol class="moments" id="moments-list">
+        <li class="moment moment-empty">
+          <div class="moment-body">
+            <p>还没有内容。</p>
+          </div>
+        </li>
+      </ol>
+    </div>
+
+  </section>
+
+  <!-- ================= 工具箱 ================= -->
+  <section class="view" id="view-tools">
+
+    <div class="slab">
+      <div class="slab-head">
+        <h2><span class="en">AVAILABLE</span><span class="cn">可用</span></h2>
+        <span class="slab-line"></span>
+      </div>
+
+      <ul class="tools">
+        <li>
+          <a class="tool-row" href="https://bx-zero.github.io/quiz-review/" target="_blank" rel="noopener">
+            <span class="tool-cn">错题复习</span>
+            <span class="tool-en">quiz-review</span>
+          </a>
+        </li>
+        <li>
+          <a class="tool-row" href="https://bx-zero.github.io/arknights-event-calc/" target="_blank" rel="noopener">
+            <span class="tool-cn">明日方舟活动代币计算器</span>
+            <span class="tool-en">arknights-event-calc</span>
+          </a>
+        </li>
+        <li>
+          <a class="tool-row" href="https://bx-zero.github.io/coc-notify/" target="_blank" rel="noopener">
+            <span class="tool-cn">部落冲突通知助手</span>
+            <span class="tool-en">coc-notify</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+
+  </section>
+
+</main>
+
+<footer class="foot">
+  <p>BXZERO · <span id="year">2026</span></p>
+  <img class="badge" src="img/dsh-badge.png" width="121" height="20" alt="powered by dsh">
+</footer>
+
+<script src="moments.js"></script>
+<script src="auth.js"></script>
+<script src="main.js"></script>
+</body>
+</html>

@@ -335,8 +335,7 @@
     editEntry.addEventListener("click", function () { openEditor(); });
     editor.addEventListener("submit", submitItem);
     fCancel.addEventListener("click", closeEditor);
-    fRemove.addEventListener("click", removeItem);
-    momentList.querySelectorAll(".moment").forEach(function (li) {
+    fRemove.addEventListener("click", removeItem);    momentList.querySelectorAll(".moment").forEach(function (li) {
       var index = parseInt(li.getAttribute("data-i"), 10);
       if (isNaN(index)) return;
       var tools = document.createElement("div");
@@ -354,6 +353,7 @@
       tools.appendChild(bDel);
       li.appendChild(tools);
     });
+    if (/edit\.html$/.test(location.pathname)) openEditor();
   }
 
   if (editEntry && window.BXAuth) {
