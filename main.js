@@ -478,7 +478,6 @@
 
   /* ---------- 背景音乐播放器 ---------- */
 
-  var VOL_KEY = "bxz-volume-3";
 
   var ICON_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>';
   var ICON_PAUSE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>';
@@ -491,9 +490,6 @@
     var playBtn = document.getElementById("pl-play");
     var prevBtn = document.getElementById("pl-prev");
     var nextBtn = document.getElementById("pl-next");
-    var volEl = document.getElementById("pl-vol");
-    var pctEl = document.getElementById("pl-pct");
-    var spkEl = document.getElementById("pl-spk");
     if (!box) return;
 
     var cfg = HOME.music || {};
@@ -513,10 +509,7 @@
     document.body.appendChild(audio);
 
     var index = 0;
-    var savedVol = Number(load(VOL_KEY));
-    var vol = isFinite(savedVol) && savedVol >= 0
-      ? Math.max(0, Math.min(1, savedVol))
-      : (typeof cfg.volume === "number" ? cfg.volume : 0.5);
+    var vol = typeof cfg.volume === "number" ? cfg.volume : 0.5;
     audio.volume = vol;
 
     function load2(k) {
@@ -529,11 +522,6 @@
       if (playBtn) playBtn.innerHTML = audio.paused ? ICON_PLAY : ICON_PAUSE;
       if (prevBtn) prevBtn.innerHTML = ICON_PREV;
       if (nextBtn) nextBtn.innerHTML = ICON_NEXT;
-      var pct = Math.round(vol * 100);
-      if (volEl) volEl.value = String(pct);
-      if (pctEl) pctEl.textContent = pct + "%";
-      if (spkEl) spkEl.classList.toggle("is-mute", pct === 0 || audio.muted);
-      root.dataset.sound = audio.paused ? "off" : "on";
       if (soundBtn) soundBtn.setAttribute("aria-pressed", audio.paused ? "true" : "false");
     }
 
@@ -565,12 +553,6 @@
     if (nextBtn) nextBtn.addEventListener("click", function () {
       load2(index + 1);
       play();
-    });
-    if (volEl) volEl.addEventListener("input", function () {
-      vol = Math.max(0, Math.min(1, Number(volEl.value) / 100));
-      audio.volume = vol;
-      store(VOL_KEY, String(vol));
-      refresh();
     });
 
     window.BXPlayer = {
