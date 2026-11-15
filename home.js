@@ -26,21 +26,21 @@ window.BX_HOME = {
     {
       "cn": "错题复习",
       "en": "quiz-review",
-      "desc": "浏览器里直接用，数据存在本地。",
+      "desc": "",
       "href": "https://bx-zero.github.io/quiz-review/",
       "tag": "WEB TOOL"
     },
     {
       "cn": "明日方舟活动代币计算器",
       "en": "arknights-event-calc",
-      "desc": "纯前端计算，不联网也能算。",
+      "desc": "",
       "href": "https://bx-zero.github.io/arknights-event-calc/",
       "tag": "CALCULATOR"
     },
     {
       "cn": "部落冲突通知助手",
       "en": "coc-notify",
-      "desc": "需要常驻进程与推送通道，目前跑在本机。",
+      "desc": "",
       "href": "https://bx-zero.github.io/coc-notify/",
       "tag": "NOTIFY"
     }
