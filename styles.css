@@ -67,7 +67,10 @@ html, body {
 }
 
 body {
-  padding-bottom: 96px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 0;
   overflow-x: hidden;
 }
 
@@ -390,6 +393,9 @@ html[data-theme="light"] #theme-toggle .moon { display: block; }
 /* ---------- 主区 ---------- */
 
 main {
+  flex: 1 0 auto;
+  box-sizing: border-box;
+  width: 100%;
   position: relative;
   z-index: 2;
   padding: 0 64px 40px;
