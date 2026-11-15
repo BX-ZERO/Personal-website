@@ -194,11 +194,12 @@
     if (!momentList) return;
     var data = window.BX_MOMENTS;
     if (!Array.isArray(data) || !data.length) return;
-    var sorted = data.slice().sort(function (a, b) {
-      return String(b.date || "").localeCompare(String(a.date || ""));
+    var sorted = data.map(function (m, i) { return { item: m, index: i }; }).sort(function (a, b) {
+      return String(b.item.date || "").localeCompare(String(a.item.date || ""));
     });
-    momentList.innerHTML = sorted.map(function (m) {
-      return '<li class="moment">' +
+    momentList.innerHTML = sorted.map(function (o) {
+      var m = o.item;
+      return '<li class="moment" data-i="' + o.index + '">' +
         '<time class="moment-date" datetime="' + esc(m.date) + '">' + esc(String(m.date).replace(/-/g, ".")) + '</time>' +
         '<div class="moment-body"><h3>' + inline(m.title) + "</h3>" + renderBody(m.body) + "</div>" +
         "</li>";
@@ -207,13 +208,157 @@
 
   renderMoments();
 
-  /* ---------- 站主入口：登录票据说了算 ---------- */
+  /* ---------- 站主入口：登录后就在这一页改 ---------- */
+
+  var DATA_PATH = "moments.js";
+  var FILE_HEADER = "/* ==========================================================\n" +
+    "   动态数据\n" +
+    "   每一条：{ date: \"YYYY-MM-DD\", title: \"标题\", body: \"正文（Markdown 简写）\" }\n" +
+    "   排序：新写的放数组最前面\n" +
+    "   这个文件可以直接手改，也可以用站点或 admin.html 在线编辑后保存\n" +
+    "   ========================================================== */\n\n" +
+    "window.BX_MOMENTS = ";
 
   var editEntry = document.getElementById("edit-entry");
+  var editor = document.getElementById("m-editor");
+  var fDate = document.getElementById("m-date");
+  var fTitle = document.getElementById("m-title");
+  var fBody = document.getElementById("m-body");
+  var fCancel = document.getElementById("m-cancel");
+  var fRemove = document.getElementById("m-remove");
+  var fStatus = document.getElementById("m-status");
+  var editingIndex = -1;
+  var busy = false;
+
+  function parseFile(text) {
+    var m = String(text).match(/window\.BX_MOMENTS\s*=\s*([\s\S]*?);?\s*$/);
+    if (!m) return [];
+    try {
+      var arr = JSON.parse(m[1]);
+      if (Array.isArray(arr)) return arr;
+    } catch (e) { /* 手写键没引号时走下面 */ }
+    try {
+      var made = new Function("return (" + m[1] + ");")();
+      return Array.isArray(made) ? made : [];
+    } catch (e2) {
+      return [];
+    }
+  }
+
+  function fileText(items) {
+    return FILE_HEADER + JSON.stringify(items, null, 2) + ";\n";
+  }
+
+  function today() {
+    var d = new Date();
+    var mm = String(d.getMonth() + 1);
+    var dd = String(d.getDate());
+    return d.getFullYear() + "-" + (mm.length < 2 ? "0" + mm : mm) + "-" + (dd.length < 2 ? "0" + dd : dd);
+  }
+
+  function say(msg, kind) {
+    if (!fStatus) return;
+    fStatus.textContent = msg || "";
+    fStatus.className = "m-status" + (kind ? " is-" + kind : "");
+  }
+
+  function openEditor(index) {
+    if (!editor) return;
+    editingIndex = typeof index === "number" ? index : -1;
+    var data = window.BX_MOMENTS || [];
+    var item = editingIndex >= 0 ? data[editingIndex] : null;
+    fDate.value = item ? item.date : today();
+    fTitle.value = item ? item.title : "";
+    fBody.value = item ? item.body : "";
+    fRemove.hidden = !item;
+    say("");
+    editor.hidden = false;
+    editor.scrollIntoView({ behavior: "smooth", block: "center" });
+    fTitle.focus();
+  }
+
+  function closeEditor() {
+    editingIndex = -1;
+    if (editor) editor.hidden = true;
+    say("");
+  }
+
+  function submitItem(e) {
+    if (e) e.preventDefault();
+    if (busy || !window.BXAuth) return;
+    var date = (fDate.value || "").trim() || today();
+    var title = (fTitle.value || "").trim();
+    var body = fBody.value || "";
+    if (!title) { say("标题不能空。", "err"); fTitle.focus(); return; }
+    busy = true;
+    say("正在保存…");
+    window.BXAuth.read(DATA_PATH).then(function (data) {
+      var items = parseFile(data.text);
+      var entry = { date: date, title: title, body: body };
+      if (editingIndex >= 0 && items[editingIndex]) items[editingIndex] = entry;
+      else items.unshift(entry);
+      return window.BXAuth.save(DATA_PATH, fileText(items), (editingIndex >= 0 ? "改动态：" : "新动态：") + title);
+    }).then(function () {
+      say("已提交。Pages 一分钟内重建完，刷新就能看到。", "ok");
+      editingIndex = -1;
+      busy = false;
+      setTimeout(function () { location.reload(); }, 1200);
+    }).catch(function (err) {
+      busy = false;
+      say("保存失败：" + (err && err.message ? err.message : err), "err");
+    });
+  }
+
+  function removeItem() {
+    if (busy || editingIndex < 0 || !window.BXAuth) return;
+    if (!window.confirm("删掉这一条？")) return;
+    busy = true;
+    say("正在删除…");
+    window.BXAuth.read(DATA_PATH).then(function (data) {
+      var items = parseFile(data.text);
+      var gone = items.splice(editingIndex, 1)[0] || {};
+      return window.BXAuth.save(DATA_PATH, fileText(items), "删除动态：" + (gone.title || ""));
+    }).then(function () {
+      say("已删除。", "ok");
+      editingIndex = -1;
+      busy = false;
+      setTimeout(function () { location.reload(); }, 1200);
+    }).catch(function (err) {
+      busy = false;
+      say("删除失败：" + (err && err.message ? err.message : err), "err");
+    });
+  }
+
+  function enableEditing() {
+    if (!momentList) return;
+    editEntry.hidden = false;
+    editEntry.addEventListener("click", function () { openEditor(); });
+    editor.addEventListener("submit", submitItem);
+    fCancel.addEventListener("click", closeEditor);
+    fRemove.addEventListener("click", removeItem);
+    momentList.querySelectorAll(".moment").forEach(function (li) {
+      var index = parseInt(li.getAttribute("data-i"), 10);
+      if (isNaN(index)) return;
+      var tools = document.createElement("div");
+      tools.className = "m-tools";
+      var bEdit = document.createElement("button");
+      bEdit.type = "button";
+      bEdit.textContent = "改";
+      bEdit.addEventListener("click", function () { openEditor(index); });
+      var bDel = document.createElement("button");
+      bDel.type = "button";
+      bDel.textContent = "删";
+      bDel.className = "m-del";
+      bDel.addEventListener("click", function () { openEditor(index); removeItem(); });
+      tools.appendChild(bEdit);
+      tools.appendChild(bDel);
+      li.appendChild(tools);
+    });
+  }
 
   if (editEntry && window.BXAuth) {
     window.BXAuth.me().then(function (who) {
-      if (who && who.ok) editEntry.hidden = false;
+      if (who && who.ok) enableEditing();
     });
   }
 })();

@@ -549,7 +549,9 @@ main {
   letter-spacing: .2em;
   color: var(--dimmer);
   text-decoration: none;
+  background: none;
   border: 1px solid var(--line-strong);
+  cursor: pointer;
   transition: color .24s ease, border-color .24s ease, background .24s ease;
 }
 
@@ -924,4 +926,120 @@ main {
 @media (prefers-reduced-motion: reduce) {
   .bg-layer, .scan, .hero-title .line::after { animation: none !important; }
   .view.is-on .hero > *, .view.is-on .slab { animation: none !important; }
+}
+
+/* ---------- 站内编辑器（登录后才出现） ---------- */
+
+.m-editor {
+  margin: 22px 0 8px;
+  padding: 20px 22px 18px;
+  border: 1px solid var(--line-strong);
+  background: var(--card-bg);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.m-row { display: flex; gap: 14px; }
+
+.m-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  flex: 1;
+  min-width: 0;
+}
+
+.m-field-date { flex: 0 0 148px; }
+
+.m-field > span {
+  font-family: var(--font-en);
+  font-size: 10.5px;
+  letter-spacing: .22em;
+  color: var(--dimmer);
+  text-transform: uppercase;
+}
+
+.m-field input,
+.m-field textarea {
+  width: 100%;
+  padding: 9px 11px;
+  font-family: inherit;
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--text);
+  background: rgba(0, 0, 0, .22);
+  border: 1px solid var(--line);
+  border-radius: 0;
+  outline: none;
+  resize: vertical;
+  transition: border-color .2s ease, background .2s ease;
+}
+
+html[data-theme="light"] .m-field input,
+html[data-theme="light"] .m-field textarea { background: #fff; }
+
+.m-field input:focus,
+.m-field textarea:focus { border-color: var(--cyan); background: rgba(53, 216, 255, .05); }
+
+.m-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+.m-btn {
+  padding: 8px 16px;
+  font-family: var(--font-en);
+  font-size: 11px;
+  letter-spacing: .16em;
+  color: var(--dimmer);
+  background: none;
+  border: 1px solid var(--line-strong);
+  cursor: pointer;
+  transition: color .2s ease, border-color .2s ease, background .2s ease;
+}
+
+.m-btn:hover, .m-btn:focus-visible {
+  color: var(--cyan);
+  border-color: var(--cyan);
+  background: rgba(53, 216, 255, .06);
+  outline: none;
+}
+
+.m-btn-main { color: #041017; background: var(--cyan); border-color: var(--cyan); font-weight: 700; }
+.m-btn-main:hover, .m-btn-main:focus-visible { color: #041017; background: #7fe6ff; border-color: #7fe6ff; }
+.m-btn-warn:hover, .m-btn-warn:focus-visible { color: var(--orange); border-color: var(--orange); background: rgba(255, 122, 26, .08); }
+
+.m-status { font-size: 12px; color: var(--dimmer); letter-spacing: .04em; }
+.m-status.is-ok { color: var(--cyan); }
+.m-status.is-err { color: var(--orange); }
+
+.moment { position: relative; }
+
+.m-tools {
+  position: absolute;
+  top: 2px;
+  right: 0;
+  display: flex;
+  gap: 6px;
+  opacity: .35;
+  transition: opacity .2s ease;
+}
+
+.m-tools button {
+  padding: 3px 9px;
+  font-family: var(--font-en);
+  font-size: 10.5px;
+  letter-spacing: .12em;
+  color: var(--dimmer);
+  background: none;
+  border: 1px solid var(--line);
+  cursor: pointer;
+  transition: color .2s ease, border-color .2s ease;
+}
+
+.m-tools button:hover { color: var(--cyan); border-color: var(--cyan); }
+.m-tools button.m-del:hover { color: var(--orange); border-color: var(--orange); }
+
+@media (max-width: 720px) {
+  .m-row { flex-direction: column; gap: 14px; }
+  .m-field-date { flex: none; }
+  .m-tools { opacity: .6; }
 }
