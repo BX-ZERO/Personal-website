@@ -283,9 +283,9 @@
 <div class="gate" id="gate">
   <div class="gate-box">
     <h2>RESTRICTED</h2>
-    <p>这一页只给站主用，输口令进去。</p>
-    <input type="password" id="gate-input" placeholder="口令" autocomplete="off">
-    <button class="btn primary" id="gate-ok" type="button">进去</button>
+    <p>这一页只给站主用。点下面的按钮，用你的 GitHub 账号登录。</p>
+    <input type="password" id="gate-input" hidden autocomplete="off">
+    <button class="btn primary" id="gate-ok" type="button">用 GitHub 登录</button>
     <p class="gate-msg" id="gate-msg"></p>
   </div>
 </div>
@@ -337,14 +337,14 @@
         <input type="text" id="cfg-branch" placeholder="main" autocomplete="off">
       </div>
       <div class="field">
-        <label for="cfg-token">访问令牌</label>
-        <input type="password" id="cfg-token" placeholder="ghp_..." autocomplete="off">
+        <label>登录状态</label>
+        <div id="auth-state" style="font-size:12.5px;opacity:.75;padding:9px 0;">正在确认…</div>
       </div>
     </div>
 
     <p class="hint">
-      令牌在 GitHub 的 <code>Settings → Developer settings → Personal access tokens → Fine-grained tokens</code> 生成，
-      只给这一个仓库的 <code>Contents: Read and write</code> 权限就够。令牌只存在这台电脑的浏览器里，不会进仓库。
+      读取走公开接口，写入由 Worker 代为提交，仓库令牌不进浏览器。
+      登录票据存在这台电脑的浏览器里，三十天后失效。
     </p>
   </section>
 
@@ -402,22 +402,17 @@
   </div>
 </main>
 
+<script src="auth.js"></script>
 <script>
 (function () {
   "use strict";
 
-  /* ---------- 口令门 ---------- */
+  /* ---------- 登录门 ---------- */
 
-  var PASS = atob("QlhaRVJPLW5vdGVzLTIwMjY=");
-  var UNLOCK_KEY = "bxz-admin-unlock";
   var gate = document.getElementById("gate");
-  var gateInput = document.getElementById("gate-input");
   var gateOk = document.getElementById("gate-ok");
   var gateMsg = document.getElementById("gate-msg");
-
-  function isUnlocked() {
-    try { return sessionStorage.getItem(UNLOCK_KEY) === "1"; } catch (e) { return false; }
-  }
+  var authState = document.getElementById("auth-state");
 
   function openGate(ok) {
     if (ok) {
@@ -426,30 +421,28 @@
     } else {
       gate.hidden = false;
       gate.style.display = "";
-      gateInput.value = "";
-      setTimeout(function () { gateInput.focus(); }, 30);
     }
   }
 
-  function tryUnlock() {
-    if (gateInput.value === PASS) {
-      try { sessionStorage.setItem(UNLOCK_KEY, "1"); } catch (e) {}
-      try { localStorage.setItem("bxz-owner", "1"); } catch (e) {}
-      gateMsg.textContent = "";
-      openGate(true);
-    } else {
-      gateMsg.textContent = "口令不对，再想想。";
-      gateInput.value = "";
-      gateInput.focus();
-    }
+  function signIn() {
+    if (window.BXAuth) window.BXAuth.login();
+    else gateMsg.textContent = "auth.js 没加载，检查同目录下有没有这个文件。";
   }
 
-  gateOk.addEventListener("click", tryUnlock);
-  gateInput.addEventListener("keydown", function (e) {
-    if (e.key === "Enter") tryUnlock();
+  gateOk.addEventListener("click", signIn);
+
+  function checkWho() {
+    if (!window.BXAuth) return Promise.resolve({ ok: false });
+    return window.BXAuth.me();
+  }
+
+  checkWho().then(function (who) {
+    var ok = !!(who && who.ok);
+    openGate(ok);
+    if (authState) authState.textContent = ok ? "已登录：" + who.login : "未登录";
+    if (ok) loadRemote();
+    else setStatus("用 GitHub 登录之后才能读写仓库。", "");
   });
-
-  openGate(isUnlocked());
 
   var CFG_KEY = "bxz-admin-cfg";
 
@@ -457,7 +450,6 @@
     owner: document.getElementById("cfg-owner"),
     repo: document.getElementById("cfg-repo"),
     branch: document.getElementById("cfg-branch"),
-    token: document.getElementById("cfg-token"),
     saveCfg: document.getElementById("save-cfg"),
     date: document.getElementById("f-date"),
     title: document.getElementById("f-title"),
@@ -483,15 +475,13 @@
     els.owner.value = cfg.owner || "BX-ZERO";
     els.repo.value = cfg.repo || "Personal-website";
     els.branch.value = cfg.branch || "main";
-    els.token.value = cfg.token || "";
   }
 
   function readCfg() {
     return {
       owner: els.owner.value.trim() || "BX-ZERO",
       repo: els.repo.value.trim() || "Personal-website",
-      branch: els.branch.value.trim() || "main",
-      token: els.token.value.trim()
+      branch: els.branch.value.trim() || "main"
     };
   }
 
@@ -617,27 +607,12 @@
     return "https://api.github.com/repos/" + cfg.owner + "/" + cfg.repo + "/contents/" + DATA_PATH;
   }
 
-  function headers(cfg) {
-    return {
-      "Authorization": "Bearer " + cfg.token,
-      "Accept": "application/vnd.github+json",
-      "Content-Type": "application/json"
-    };
-  }
-
-  function needToken(cfg) {
-    if (!cfg.token) {
-      setStatus("先在上面填访问令牌，并点一次「记下设置」。", "err");
-      return true;
-    }
-    return false;
-  }
-
   function loadRemote() {
     var cfg = readCfg();
-    if (needToken(cfg)) return Promise.reject(new Error("no token"));
     setStatus("正在读取仓库…");
-    return fetch(apiUrl(cfg) + "?ref=" + encodeURIComponent(cfg.branch), { headers: headers(cfg) })
+    return fetch(apiUrl(cfg) + "?ref=" + encodeURIComponent(cfg.branch), {
+      headers: { "Accept": "application/vnd.github+json" }
+    })
       .then(function (r) {
         if (r.status === 404) {
           fileSha = null;
@@ -646,7 +621,7 @@
           setStatus("仓库里还没有这个文件，第一次保存会新建。", "ok");
           return null;
         }
-        if (!r.ok) throw new Error("HTTP " + r.status + "（检查令牌权限和仓库名）");
+        if (!r.ok) throw new Error("HTTP " + r.status + "（检查仓库名）");
         return r.json();
       })
       .then(function (data) {
@@ -657,37 +632,24 @@
         setStatus("已读取 " + list.length + " 条。", "ok");
       })
       .catch(function (e) {
-        if (e.message !== "no token") setStatus("读取失败：" + e.message, "err");
+        setStatus("读取失败：" + e.message, "err");
       });
   }
 
   function putRemote(items, message) {
-    var cfg = readCfg();
-    if (needToken(cfg)) return Promise.reject(new Error("no token"));
-    var payload = {
-      message: message,
-      content: b64encode(toFileText(items)),
-      branch: cfg.branch
-    };
-    if (fileSha) payload.sha = fileSha;
-
+    if (!window.BXAuth) {
+      setStatus("auth.js 没加载，无法提交。", "err");
+      return Promise.reject(new Error("no auth"));
+    }
     setStatus("正在提交…");
-    return fetch(apiUrl(cfg), {
-      method: "PUT",
-      headers: headers(cfg),
-      body: JSON.stringify(payload)
-    }).then(function (r) {
-      if (r.status === 409 || r.status === 422) {
-        throw new Error("仓库那边版本对不上，点「从仓库重读」再来一次");
-      }
-      if (!r.ok) return r.text().then(function (t) { throw new Error("HTTP " + r.status + " " + t.slice(0, 120)); });
-      return r.json();
-    }).then(function (data) {
-      fileSha = data.content && data.content.sha;
-      setStatus("已提交。Pages 一般一分钟内重建完，稍等刷新站点。", "ok");
-    }).catch(function (e) {
-      setStatus("提交失败：" + e.message, "err");
-    });
+    return window.BXAuth.save(DATA_PATH, toFileText(items), message)
+      .then(function () {
+        setStatus("已提交。Pages 一般一分钟内重建完，稍等刷新站点。", "ok");
+        return loadRemote();
+      })
+      .catch(function (e) {
+        setStatus("提交失败：" + e.message, "err");
+      });
   }
 
   /* ---------- 动作 ---------- */
@@ -756,12 +718,6 @@
   loadCfg();
   fillForm(null);
   renderList();
-
-  if (readCfg().token) {
-    loadRemote();
-  } else {
-    setStatus("先填令牌，或者直接把下面列表里的当草稿试。", "");
-  }
 })();
 </script>
 </body>

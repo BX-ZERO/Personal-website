@@ -207,13 +207,13 @@
 
   renderMoments();
 
-  /* ---------- 站主标记：只有这台电脑看得到写作入口 ---------- */
+  /* ---------- 站主入口：登录票据说了算 ---------- */
 
   var editEntry = document.getElementById("edit-entry");
 
-  if (editEntry) {
-    var isOwner = false;
-    try { isOwner = localStorage.getItem("bxz-owner") === "1"; } catch (e) {}
-    if (isOwner) editEntry.hidden = false;
+  if (editEntry && window.BXAuth) {
+    window.BXAuth.me().then(function (who) {
+      if (who && who.ok) editEntry.hidden = false;
+    });
   }
 })();
