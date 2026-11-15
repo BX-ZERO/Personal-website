@@ -63,8 +63,20 @@
         .catch(function () { return { ok: false }; });
     },
 
-    save: function (path, content, message) {
+    read: function (path) {
       var ticket = get(TICKET_KEY);
+      if (!ticket) return Promise.reject(new Error("没有登录"));
+      return fetch(WORKER + "/read?path=" + encodeURIComponent(path), {
+        headers: { authorization: "Bearer " + ticket }
+      }).then(function (r) {
+        return r.json().then(function (data) {
+          if (!r.ok || data.error) throw new Error(data.error || ("HTTP " + r.status));
+          return data;
+        });
+      });
+    },
+
+    save: function (path, content, message) {      var ticket = get(TICKET_KEY);
       if (!ticket) return Promise.reject(new Error("没有登录"));
       return fetch(WORKER + "/save", {
         method: "POST",

@@ -608,26 +608,22 @@
   }
 
   function loadRemote() {
-    var cfg = readCfg();
+    if (!window.BXAuth) {
+      setStatus("auth.js 没加载，读不了仓库。", "err");
+      return Promise.reject(new Error("no auth"));
+    }
     setStatus("正在读取仓库…");
-    return fetch(apiUrl(cfg) + "?ref=" + encodeURIComponent(cfg.branch), {
-      headers: { "Accept": "application/vnd.github+json" }
-    })
-      .then(function (r) {
-        if (r.status === 404) {
+    return window.BXAuth.read(DATA_PATH)
+      .then(function (data) {
+        if (data.missing) {
           fileSha = null;
           list = [];
           renderList();
           setStatus("仓库里还没有这个文件，第一次保存会新建。", "ok");
-          return null;
+          return;
         }
-        if (!r.ok) throw new Error("HTTP " + r.status + "（检查仓库名）");
-        return r.json();
-      })
-      .then(function (data) {
-        if (!data) return;
         fileSha = data.sha;
-        list = parseFileText(b64decode(data.content));
+        list = parseFileText(data.text);
         renderList();
         setStatus("已读取 " + list.length + " 条。", "ok");
       })
