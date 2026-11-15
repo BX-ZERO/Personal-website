@@ -552,8 +552,15 @@
     if (!m) return [];
     try {
       var arr = JSON.parse(m[1]);
-      return Array.isArray(arr) ? arr : [];
+      if (Array.isArray(arr)) return arr;
     } catch (e) {
+      /* 手写的对象字面量键没引号，JSON 会拒，退回求值 */
+    }
+    try {
+      var made = new Function("return (" + m[1] + ");")();
+      return Array.isArray(made) ? made : [];
+    } catch (e2) {
+      setStatus("文件解析失败：" + e2.message, "err");
       return [];
     }
   }
