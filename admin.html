@@ -222,6 +222,54 @@
     gap: 12px;
   }
 
+  /* 口令门 */
+  .gate {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: grid;
+    place-items: center;
+    background: #04070a;
+    padding: 20px;
+  }
+
+  .gate[hidden] { display: none; }
+
+  .gate-box {
+    width: 100%;
+    max-width: 360px;
+    border: 1px solid var(--line-strong);
+    background: rgba(10, 16, 22, .96);
+    padding: 26px 26px 22px;
+  }
+
+  .gate-box h2 {
+    margin: 0 0 6px;
+    font-family: var(--font-en);
+    font-size: 12px;
+    letter-spacing: .26em;
+    color: var(--dim);
+  }
+
+  .gate-box p {
+    margin: 0 0 16px;
+    font-size: 13px;
+    color: #8e9aa8;
+  }
+
+  .gate-box input {
+    margin-bottom: 12px;
+  }
+
+  .gate-box .gate-msg {
+    margin: 10px 0 0;
+    font-size: 12px;
+    color: var(--orange);
+    min-height: 16px;
+  }
+
+  .gate-box .btn { width: 100%; }
+
   @media (max-width: 900px) {
     .admin { padding: 96px 16px 70px; }
     .grid2 { grid-template-columns: 1fr; }
@@ -230,6 +278,17 @@
 </style>
 </head>
 <body>
+
+<!-- 口令门：没口令就进不了编辑界面 -->
+<div class="gate" id="gate">
+  <div class="gate-box">
+    <h2>RESTRICTED</h2>
+    <p>这一页只给站主用，输口令进去。</p>
+    <input type="password" id="gate-input" placeholder="口令" autocomplete="off">
+    <button class="btn primary" id="gate-ok" type="button">进去</button>
+    <p class="gate-msg" id="gate-msg"></p>
+  </div>
+</div>
 
 <div class="bg" aria-hidden="true">
   <div class="bg-layer layer-a"></div>
@@ -346,6 +405,50 @@
 <script>
 (function () {
   "use strict";
+
+  /* ---------- 口令门 ---------- */
+
+  var PASS = atob("QlhaRVJPLW5vdGVzLTIwMjY=");
+  var UNLOCK_KEY = "bxz-admin-unlock";
+  var gate = document.getElementById("gate");
+  var gateInput = document.getElementById("gate-input");
+  var gateOk = document.getElementById("gate-ok");
+  var gateMsg = document.getElementById("gate-msg");
+
+  function isUnlocked() {
+    try { return sessionStorage.getItem(UNLOCK_KEY) === "1"; } catch (e) { return false; }
+  }
+
+  function openGate(ok) {
+    if (ok) {
+      gate.hidden = true;
+      gate.style.display = "none";
+    } else {
+      gate.hidden = false;
+      gate.style.display = "";
+      gateInput.value = "";
+      setTimeout(function () { gateInput.focus(); }, 30);
+    }
+  }
+
+  function tryUnlock() {
+    if (gateInput.value === PASS) {
+      try { sessionStorage.setItem(UNLOCK_KEY, "1"); } catch (e) {}
+      gateMsg.textContent = "";
+      openGate(true);
+    } else {
+      gateMsg.textContent = "口令不对，再想想。";
+      gateInput.value = "";
+      gateInput.focus();
+    }
+  }
+
+  gateOk.addEventListener("click", tryUnlock);
+  gateInput.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") tryUnlock();
+  });
+
+  openGate(isUnlocked());
 
   var CFG_KEY = "bxz-admin-cfg";
 
