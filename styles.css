@@ -539,6 +539,28 @@ main {
   background: linear-gradient(to right, var(--line-strong), transparent 85%);
 }
 
+/* 跳到写作台的入口 */
+
+.edit-link {
+  flex: none;
+  padding: 7px 15px;
+  font-family: var(--font-en);
+  font-size: 11px;
+  letter-spacing: .2em;
+  color: var(--dimmer);
+  text-decoration: none;
+  border: 1px solid var(--line-strong);
+  transition: color .24s ease, border-color .24s ease, background .24s ease;
+}
+
+.edit-link:hover,
+.edit-link:focus-visible {
+  color: var(--cyan);
+  border-color: var(--cyan);
+  background: rgba(53, 216, 255, .06);
+  outline: none;
+}
+
 /* ---------- 项目卡 ---------- */
 
 .cards {
