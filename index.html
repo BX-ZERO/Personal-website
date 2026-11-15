@@ -86,31 +86,8 @@
       <div class="slab-head">
         <h2><span class="en">MOMENTS</span><span class="cn">动态</span></h2>
         <span class="slab-line"></span>
-        <button class="edit-link" id="edit-entry" type="button" hidden>NEW</button>
+        <a class="edit-link" id="edit-entry" href="edit.html" hidden>EDIT</a>
       </div>
-
-      <form class="m-editor" id="m-editor" hidden>
-        <div class="m-row">
-          <label class="m-field m-field-date">
-            <span>日期</span>
-            <input type="text" id="m-date" placeholder="2026-11-15" autocomplete="off">
-          </label>
-          <label class="m-field">
-            <span>标题</span>
-            <input type="text" id="m-title" placeholder="写一句能当标题的话" autocomplete="off">
-          </label>
-        </div>
-        <label class="m-field">
-          <span>正文</span>
-          <textarea id="m-body" rows="6" placeholder="空行分段，支持 `代码`、**粗体**、[文字](链接)"></textarea>
-        </label>
-        <div class="m-actions">
-          <button type="submit" class="m-btn m-btn-main" id="m-save">保存到仓库</button>
-          <button type="button" class="m-btn" id="m-cancel">取消</button>
-          <button type="button" class="m-btn m-btn-warn" id="m-remove" hidden>删除这条</button>
-          <span class="m-status" id="m-status"></span>
-        </div>
-      </form>
 
       <ol class="moments" id="moments-list">
         <li class="moment moment-empty">
