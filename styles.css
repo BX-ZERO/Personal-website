@@ -306,8 +306,14 @@ body {
   border: 1px solid var(--line-strong);
   background: transparent;
   color: var(--dim);
+  text-decoration: none;
   cursor: pointer;
   transition: color .3s ease, border-color .3s ease, background .3s ease;
+}
+
+.tool-btn.is-on {
+  color: var(--cyan);
+  border-color: var(--cyan);
 }
 
 .tool-btn svg {

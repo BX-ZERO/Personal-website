@@ -358,7 +358,11 @@
 
   if (editEntry && window.BXAuth) {
     window.BXAuth.me().then(function (who) {
-      if (who && who.ok) enableEditing();
+      if (who && who.ok) {
+        enableEditing();
+        var accLink = document.getElementById("account-link");
+        if (accLink) accLink.classList.add("is-on");
+      }
     });
   }
 })();
