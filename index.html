@@ -20,7 +20,7 @@
 <link rel="icon" href="img/bx-icon.ico" sizes="any">
 <link rel="icon" type="image/png" href="img/bx-icon.png">
 <link rel="apple-touch-icon" href="img/bx-icon.png">
-<link rel="stylesheet" href="styles.css?v=20261116z18">
+<link rel="stylesheet" href="styles.css?v=20261116z20">
 </head>
 <body>
 
@@ -547,29 +547,49 @@
     }).join("") || '<p class="status">还没有工具。</p>';
   }
 
-  function renderEntries() {
-    var rows = state.entries || [];
-    entriesBox.innerHTML = rows.map(function (e, i) {
-      return '<div class="card" data-i="' + i + '">' +
-        '<div class="two">' +
-        '<label class="f"><span>日期</span><input data-k="date" type="date" value="' + esc(e.date) + '"></label>' +
-        '<label class="f"><span>标题</span><input data-k="title" type="text" value="' + esc(e.title) + '"></label>' +
-        "</div>" +
-        '<div class="two">' +
-        '<label class="f"><span>类型</span><select data-k="kind">' +
-        '<option value="note"' + (e.kind === "note" ? " selected" : "") + ">随笔</option>" +
-        '<option value="tool"' + (e.kind === "tool" ? " selected" : "") + ">工具</option>" +
-        "</select></label>" +
-        '<label class="f"><span>链接（可空）</span><input data-k="href" type="text" value="' + esc(e.href) + '"></label>' +
-        "</div>" +
-        '<label class="f"><span>描述</span><textarea data-k="desc" rows="2">' + esc(e.desc) + "</textarea></label>" +
-        '<div class="acts">' +
-        '<button class="btn mini" data-act="up" type="button">上移</button>' +
-        '<button class="btn mini" data-act="down" type="button">下移</button>' +
-        '<button class="btn mini danger" data-act="del" type="button">删除</button>' +
-        "</div></div>";
-    }).join("") || '<p class="status">还没有手写条目。</p>';
-  }
+  /* 当前展开编辑的那一条，-1 表示全部收起 */
+  var openEntry = -1;
+
+  function entryHead(e, i, on) {
+    return '<button class="ent-row' + (on ? " is-on" : "") + '" type="button" data-act="open" data-i="' + i + '">' +
+      '<span class="ent-caret" aria-hidden="true"></span>' +
+      '<span class="ent-date">' + esc(e.date || "—") + "</span>" +
+      '<span class="ent-title">' + esc(e.title || "（没标题）") + "</span>" +
+      '<span class="ent-kind">' + (e.kind === "tool" ? "工具" : "随笔") + "</span>" +
+      "</button>";
+  }
+
+  function renderEntries() {
+    var rows = state.entries || [];
+    if (!rows.length) {
+      entriesBox.innerHTML = '<p class="status">还没有手写条目。</p>';
+      return;
+    }
+    if (openEntry >= rows.length) openEntry = -1;
+    entriesBox.innerHTML = rows.map(function (e, i) {
+      var on = openEntry === i;
+      if (!on) return '<div class="ent" data-i="' + i + '">' + entryHead(e, i, false) + "</div>";
+      return '<div class="card" data-i="' + i + '">' +
+        entryHead(e, i, true) +
+        '<div class="two">' +
+        '<label class="f"><span>日期</span><input data-k="date" type="date" value="' + esc(e.date) + '"></label>' +
+        '<label class="f"><span>标题</span><input data-k="title" type="text" value="' + esc(e.title) + '"></label>' +
+        "</div>" +
+        '<div class="two">' +
+        '<label class="f"><span>类型</span><select data-k="kind">' +
+        '<option value="note"' + (e.kind === "note" ? " selected" : "") + ">随笔</option>" +
+        '<option value="tool"' + (e.kind === "tool" ? " selected" : "") + ">工具</option>" +
+        "</select></label>" +
+        '<label class="f"><span>链接（可空）</span><input data-k="href" type="text" value="' + esc(e.href) + '"></label>' +
+        "</div>" +
+        '<label class="f"><span>描述</span><textarea data-k="desc" rows="2">' + esc(e.desc) + "</textarea></label>" +
+        '<div class="acts">' +
+        '<button class="btn mini" data-act="up" type="button">上移</button>' +
+        '<button class="btn mini" data-act="down" type="button">下移</button>' +
+        '<button class="btn mini danger" data-act="del" type="button">删除</button>' +
+        "</div></div>";
+    }).join("");
+  }
 
   function renderAll() {
     var sl = slabOf();
@@ -588,7 +608,7 @@
   function bindList(box, getList, rerender) {
     box.addEventListener("input", function (e) {
       var field = e.target.closest("[data-k]");
-      var card = e.target.closest(".card");
+      var card = e.target.closest("[data-i]");
       if (!field || !card) return;
       var i = Number(card.dataset.i);
       var list = getList();
@@ -598,7 +618,7 @@
 
     box.addEventListener("change", function (e) {
       var field = e.target.closest("[data-k]");
-      var card = e.target.closest(".card");
+      var card = e.target.closest("[data-i]");
       if (!field || !card) return;
       var i = Number(card.dataset.i);
       var list = getList();
@@ -609,13 +629,19 @@
     box.addEventListener("click", function (e) {
       var btn = e.target.closest("[data-act]");
       if (!btn) return;
-      var card = e.target.closest(".card");
+      var card = e.target.closest("[data-i]");
       if (!card) return;
       var i = Number(card.dataset.i);
       var list = getList();
       var act = btn.dataset.act;
+      if (act === "open") {
+        openEntry = openEntry === i ? -1 : i;
+        rerender();
+        return;
+      }
       if (act === "del") {
         list.splice(i, 1);
+        openEntry = -1;
       } else if (act === "up" && i > 0) {
         var tmp = list[i - 1];
         list[i - 1] = list[i];
@@ -700,13 +726,14 @@
 
   document.getElementById("add-entry").addEventListener("click", function () {
     state.entries = state.entries || [];
-    state.entries.push({
+    state.entries.unshift({
       date: new Date().toISOString().slice(0, 10),
       kind: "note",
       title: "新条目",
       desc: "",
       href: ""
     });
+    openEntry = 0;
     renderEntries();
   });
 

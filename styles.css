@@ -2763,3 +2763,77 @@ html[data-theme="light"] .preview { background: #f6f8fa; }
   letter-spacing: .04em;
   color: var(--dimmer);
 }
+
+/* 手写条目：收起来时只留一行，点开才编辑 */
+#view-home-edit .ent { margin-bottom: 10px; }
+
+#view-home-edit .ent-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  font: inherit;
+  font-size: 13.5px;
+  text-align: left;
+  color: var(--text);
+  background: none;
+  border: 1px solid var(--line);
+  cursor: pointer;
+  transition: background .2s ease, border-color .2s ease;
+}
+
+#view-home-edit .ent-row:hover,
+#view-home-edit .ent-row.is-on {
+  background: rgba(53, 216, 255, .06);
+  border-color: rgba(53, 216, 255, .35);
+}
+
+html[data-theme="light"] #view-home-edit .ent-row { background: #fff; }
+html[data-theme="light"] #view-home-edit .ent-row:hover,
+html[data-theme="light"] #view-home-edit .ent-row.is-on { background: rgba(53, 216, 255, .1); }
+
+#view-home-edit .ent-caret {
+  width: 0;
+  height: 0;
+  border-left: 5px solid var(--dimmer);
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  transition: transform .2s ease, border-left-color .2s ease;
+}
+
+#view-home-edit .ent-row.is-on .ent-caret {
+  transform: rotate(90deg);
+  border-left-color: var(--cyan);
+}
+
+#view-home-edit .ent-date {
+  font-family: var(--font-en);
+  font-size: 11px;
+  letter-spacing: .14em;
+  color: var(--dimmer);
+}
+
+#view-home-edit .ent-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#view-home-edit .ent-kind {
+  font-size: 10.5px;
+  letter-spacing: .12em;
+  color: var(--cyan);
+}
+
+/* 展开态：卡片内部这一行不要自己的边框 */
+#view-home-edit .card > .ent-row {
+  padding: 0 0 12px;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+#view-home-edit .card > .ent-row:hover { background: none; }
