@@ -1287,6 +1287,15 @@ html[data-theme="light"] .m-field textarea { background: #fff; }
   color: var(--dim);
 }
 
+/* 中栏底部那句提示 */
+.info-go {
+  display: inline-block;
+  margin-top: 12px;
+  font-size: 11.5px;
+  letter-spacing: .16em;
+  color: var(--cyan);
+}
+
 .info-item h4 a.info-link {
   color: inherit;
   text-decoration: none;

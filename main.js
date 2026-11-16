@@ -319,6 +319,10 @@
     var descHtml = it.kind !== "post" && it.desc
       ? '<p class="info-desc">' + inline(it.desc) + "</p>"
       : "";
+    var goText = "";
+    if (it.kind === "post") goText = "点击标题读全文 →";
+    else if (it.kind === "tool" && it.href) goText = "点击标题跳转工具网站";
+    var goHtml = goText ? '<span class="info-go">' + goText + "</span>" : "";
     var side = it.bodyHtml
       ? '<div class="info-peek">' +
         '<div class="info-meta"><time>' + esc(it.date.replace(/-/g, ".")) + "</time>" +
@@ -334,6 +338,7 @@
       '<span class="info-kind">' + esc(KIND_LABEL[it.kind] || it.kind) + "</span></div>" +
       titleHtml +
       descHtml +
+      goHtml +
       "</div>" +
       side;
   }
