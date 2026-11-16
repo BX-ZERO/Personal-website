@@ -320,7 +320,7 @@
       ? '<p class="info-desc">' + inline(it.desc) + "</p>"
       : "";
     var goText = "";
-    if (it.kind === "post") goText = "点击标题读全文 →";
+    if (it.kind === "post") goText = "点击标题读全文 ↑";
     else if (it.kind === "tool" && it.href) goText = "点击标题跳转工具网站";
     var goHtml = goText ? '<span class="info-go">' + goText + "</span>" : "";
     var side = it.bodyHtml
