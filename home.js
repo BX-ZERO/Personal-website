@@ -71,6 +71,13 @@ window.BX_HOME = {
       "title": "明日方舟活动代币计算器",
       "desc": "全网没找到能用的活动代币计算器，让DSH搓了一个",
       "href": "https://bx-zero.github.io/arknights-event-calc/"
+    },
+    {
+      "date": "2026-11-12",
+      "kind": "tool",
+      "title": "部落冲突升级通知助手",
+      "desc": "微信小程序那个要反复增加订阅也太烦了，借助CF能一直通知了",
+      "href": "https://bx-zero.github.io/coc-notify/"
     }
   ]
 };
