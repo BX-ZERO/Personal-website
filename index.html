@@ -20,7 +20,7 @@
 <link rel="icon" href="img/bx-icon.ico" sizes="any">
 <link rel="icon" type="image/png" href="img/bx-icon.png">
 <link rel="apple-touch-icon" href="img/bx-icon.png">
-<link rel="stylesheet" href="styles.css?v=20261116z13">
+<link rel="stylesheet" href="styles.css?v=20261116z14">
 </head>
 <body>
 
@@ -438,10 +438,16 @@
   <span class="ver">v1.0.2</span>
 </footer>
 
-<script src="home.js?v=20261116z13"></script>
-<script src="moments.js?v=20261116z13"></script>
-<script src="auth.js?v=20261116z13"></script>
-<script src="main.js?v=20261116z13"></script>
+  <!-- 数据文件按分钟取版本，写作台保存后不必等 CDN 缓存过期 -->
+  <script>
+    (function () {
+      var v = Math.floor(Date.now() / 60000);
+      document.write('<script src="home.js?t=' + v + '"><\/script>');
+      document.write('<script src="moments.js?t=' + v + '"><\/script>');
+    })();
+  </script>
+<script src="auth.js?v=20261116z14"></script>
+<script src="main.js?v=20261116z14"></script>
 <script>
 (function () {
   "use strict";

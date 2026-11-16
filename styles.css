@@ -2487,7 +2487,10 @@ html[data-theme="light"] .player {
   html[data-theme="light"] .pane textarea { background: #f6f8fa; border-color: #d8dee6; color: #10161d; }
   html[data-theme="light"] .entry:hover { background: rgba(53, 216, 255, .08); }
   html[data-theme="light"] .row-del { border-color: rgba(0, 0, 0, .18); color: #6d7783; }
-  html[data-theme="light"] .preview { background: #f6f8fa; }
+  /* 写作台预览框里的图保持小一号，别撑满整栏 */
+#preview .article img, #float-body .article img { max-width: 300px; margin: 12px auto; }
+
+html[data-theme="light"] .preview { background: #f6f8fa; }
   html[data-theme="light"] .gate { background: #eef2f6; }
   html[data-theme="light"] .gate-box { background: #fff; }
   html[data-theme="light"] .gate-box p { color: #5b6570; }

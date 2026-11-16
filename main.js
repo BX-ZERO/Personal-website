@@ -127,10 +127,21 @@
 
   function store(key, value) {
     try { localStorage.setItem(key, value); } catch (e) { /* file:// 下可能被禁 */ }
+    try {
+      document.cookie = key + "=" + encodeURIComponent(value) +
+        "; max-age=31536000; path=/; SameSite=Lax";
+    } catch (e) { /* cookie 也写不了就算了 */ }
   }
 
   function load(key) {
-    try { return localStorage.getItem(key); } catch (e) { return null; }
+    try {
+      var v = localStorage.getItem(key);
+      if (v !== null) return v;
+    } catch (e) { /* 继续试 cookie */ }
+    try {
+      var m = new RegExp("(?:^|; )" + key + "=([^;]*)").exec(document.cookie);
+      return m ? decodeURIComponent(m[1]) : null;
+    } catch (e) { return null; }
   }
 
   function applyTheme(t) {
