@@ -24,7 +24,6 @@
     navItems.forEach(function (a) {
       a.classList.toggle("is-active", a.dataset.view === name);
     });
-    if (name !== "home") peekHide();
     if (name === "account") renderAccount();
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -204,6 +203,18 @@
     return renderBody(s);
   }
 
+  function previewHtml(html) {
+    var m = /<img\b[^>]*>/i.exec(html || "");
+    if (!m) return html || "";
+    var end = (m.index || 0) + m[0].length;
+    return html.slice(0, end);
+  }
+
+  function firstImage(html) {
+    var m = /<img[^>]+src="([^"]+)"/i.exec(html || "");
+    return m ? m[1] : "";
+  }
+
   function excerpt(html, limit) {
     var div = document.createElement("div");
     div.innerHTML = html;
@@ -266,11 +277,14 @@
       ms.map(function (m, i) { return { item: m, index: i }; })
         .sort(function (a, b) { return String(b.item.date || "").localeCompare(String(a.item.date || "")); })
         .forEach(function (o) {
+          var html = bodyToHtml(o.item.body);
           out.push({
             date: String(o.item.date || ""),
             kind: "post",
             title: o.item.title || "无标题",
-            desc: excerpt(bodyToHtml(o.item.body), 150),
+            desc: excerpt(html, 150),
+            cover: firstImage(html),
+            bodyHtml: previewHtml(html),
             href: postHref(o.index, o.item.title),
             postIndex: o.index
           });
@@ -290,13 +304,23 @@
       ? '<h4><a class="info-link" href="' + esc(it.href) + '"' +
         (it.kind === "post" ? "" : ' target="_blank" rel="noopener"') + ">" + esc(it.title) + "</a></h4>"
       : "<h4>" + esc(it.title) + "</h4>";
+    var side = it.bodyHtml
+      ? '<div class="info-peek">' +
+        '<div class="info-meta"><time>' + esc(it.date.replace(/-/g, ".")) + "</time>" +
+        '<span class="info-kind">' + esc(KIND_LABEL[it.kind] || it.kind) + "</span></div>" +
+        "<h5>" + inline(it.title || "（无标题）") + "</h5>" +
+        '<div class="info-peek-body">' + it.bodyHtml + "</div>" +
+        "</div>"
+      : "";
+    homeBody.classList.toggle("is-textonly", !it.bodyHtml);
     homeBody.innerHTML =
       '<div class="info-item" data-i="' + i + '">' +
       '<div class="info-meta"><time>' + esc(it.date.replace(/-/g, ".")) + "</time>" +
       '<span class="info-kind">' + esc(KIND_LABEL[it.kind] || it.kind) + "</span></div>" +
       titleHtml +
       (it.desc ? "<p>" + esc(it.desc) + "</p>" : "") +
-      "</div>";
+      "</div>" +
+      side;
   }
 
   function applySlab(id, val, dEn, dCn) {
@@ -349,77 +373,6 @@
       if (!btn) return;
       showHomeItem(Number(btn.dataset.i));
     });
-  }
-
-  /* ---------- 悬停预览：标题旁边浮出一小块文章开头 ---------- */
-
-  var peek = document.getElementById("peek");
-  var peekSheet = document.getElementById("peek-sheet");
-  var viewHome = document.getElementById("view-home");
-  var peekTimer = 0;
-  var peekAnchor = null;
-
-  function peekHide() {
-    if (!peek) return;
-    clearTimeout(peekTimer);
-    peekAnchor = null;
-    peek.classList.remove("is-on");
-    peek.setAttribute("aria-hidden", "true");
-  }
-
-  function peekShow(anchor, postIndex) {
-    var m = (window.BX_MOMENTS || [])[postIndex];
-    if (!peek || !peekSheet || !m) return;
-    peekSheet.innerHTML =
-      '<div class="peek-meta"><time>' + esc(String(m.date || "").replace(/-/g, ".")) + "</time>" +
-      '<span class="peek-kind">动态</span></div>' +
-      "<h5>" + inline(m.title || "（无标题）") + "</h5>" +
-      '<div class="peek-body">' + bodyToHtml(m.body) + "</div>" +
-      '<span class="peek-go">点击标题读全文 →</span>';
-
-    peekAnchor = anchor;
-    peek.classList.add("is-on");
-    peek.setAttribute("aria-hidden", "false");
-
-    var r = anchor.getBoundingClientRect();
-    var w = peek.offsetWidth;
-    var h = peek.offsetHeight;
-    var left = r.right + 22;
-    if (left + w > window.innerWidth - 14) left = r.left - 22 - w;
-    if (left < 14) left = 14;
-    var top = r.top - 14;
-    if (top + h > window.innerHeight - 14) top = window.innerHeight - 14 - h;
-    if (top < 14) top = 14;
-    peek.style.left = Math.round(left) + "px";
-    peek.style.top = Math.round(top) + "px";
-  }
-
-  function postIndexOf(el) {
-    if (!el || !el.closest || !el.closest(".info-link")) return -1;
-    var box = el.closest(".info-item");
-    if (!box) return -1;
-    var it = tlItems[Number(box.dataset.i)];
-    return it && it.kind === "post" ? it.postIndex : -1;
-  }
-
-  if (viewHome) {
-    viewHome.addEventListener("mouseover", function (e) {
-      var anchor = e.target.closest ? e.target.closest(".info-link") : null;
-      if (!anchor || anchor === peekAnchor) return;
-      var idx = postIndexOf(anchor);
-      if (idx < 0) return;
-      clearTimeout(peekTimer);
-      peekTimer = setTimeout(function () { peekShow(anchor, idx); }, 130);
-    });
-
-    viewHome.addEventListener("mouseout", function (e) {
-      var anchor = e.target.closest ? e.target.closest(".info-link") : null;
-      if (!anchor) return;
-      if (e.relatedTarget && anchor.contains(e.relatedTarget)) return;
-      peekHide();
-    });
-
-    window.addEventListener("scroll", peekHide, { passive: true });
   }
 
   renderHome();
