@@ -315,6 +315,10 @@
       ? '<h4><a class="info-link" href="' + esc(it.href) + '"' +
         (it.kind === "post" ? "" : ' target="_blank" rel="noopener"') + ">" + esc(it.title) + "</a></h4>"
       : "<h4>" + esc(it.title) + "</h4>";
+    /* 手写条目的说明文字放中栏；动态的正文在右侧预览里，中栏只留标题 */
+    var descHtml = it.kind !== "post" && it.desc
+      ? '<p class="info-desc">' + inline(it.desc) + "</p>"
+      : "";
     var side = it.bodyHtml
       ? '<div class="info-peek">' +
         '<div class="info-meta"><time>' + esc(it.date.replace(/-/g, ".")) + "</time>" +
@@ -329,6 +333,7 @@
       '<div class="info-meta"><time>' + esc(it.date.replace(/-/g, ".")) + "</time>" +
       '<span class="info-kind">' + esc(KIND_LABEL[it.kind] || it.kind) + "</span></div>" +
       titleHtml +
+      descHtml +
       "</div>" +
       side;
   }
