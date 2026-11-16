@@ -66,6 +66,13 @@ window.BX_HOME = {
   },
   "entries": [
     {
+      "date": "2026-11-15",
+      "kind": "tool",
+      "title": "错题复习工具",
+      "desc": "在备考安全员，刷题的微信小程序太垃圾了，让DSH搓了一个",
+      "href": "https://bx-zero.github.io/quiz-review/"
+    },
+    {
       "date": "2026-11-05",
       "kind": "tool",
       "title": "明日方舟活动代币计算器",
