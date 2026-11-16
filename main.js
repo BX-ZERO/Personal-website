@@ -505,7 +505,8 @@ var ICON_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11
 
     load2(0);
     refresh();
-    if (load(PLAY_KEY) !== "off") play();
+    var wantPlay = load(PLAY_KEY) !== "off";
+    if (wantPlay) play();
 
     if (playBtn) playBtn.addEventListener("click", function () {
       if (audio.paused) {
@@ -549,13 +550,17 @@ var ICON_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11
       if (e.key === "Escape" && !box.hidden) box.hidden = true;
     });
 
-    ["pointerdown", "keydown", "touchstart"].forEach(function (evt) {
-      var once = function () {
-        if (audio.paused) play();
-        window.removeEventListener(evt, once);
-      };
-      window.addEventListener(evt, once, { passive: true });
-    });
+    /* 只有上次是要听的时候，才等一次交互把被拦下的播放接着放；
+       上次是关的，就别再被任何点击唤醒。 */
+    if (wantPlay) {
+      ["pointerdown", "keydown", "touchstart"].forEach(function (evt) {
+        var once = function () {
+          if (audio.paused) play();
+          window.removeEventListener(evt, once);
+        };
+        window.addEventListener(evt, once, { passive: true });
+      });
+    }
   })();
 
   /* ---------- 账号 ---------- */
