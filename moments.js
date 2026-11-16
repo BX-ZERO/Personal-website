@@ -7,6 +7,11 @@
 
 window.BX_MOMENTS = [
   {
+    "date": "2026-11-16",
+    "title": "我是抽卡之神吗",
+    "body": "<img src=\"media/1794798928204-3fof1.png\" alt=\"395E3BC837BAA37632B12A1CC720A2D0.png\">&nbsp;4缺4本来想拼一把抽一个就收手的，结果第一发10连直接出完了😇"
+  },
+  {
     "date": "2026-11-11",
     "title": "桃胶木薯炖奶",
     "body": "开半天车来吃全南宁唯一一家有桃胶木薯炖奶的蜜雪，难吃的要死，早知道不来了<img src=\"media/1794767301138-qqr8h.jpg\" alt=\"1.jpg\">&nbsp;<img src=\"media/1794767304888-kgl6j.jpg\" alt=\"2.jpg\">&nbsp;"
