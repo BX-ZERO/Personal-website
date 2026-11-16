@@ -318,7 +318,6 @@
       '<div class="info-meta"><time>' + esc(it.date.replace(/-/g, ".")) + "</time>" +
       '<span class="info-kind">' + esc(KIND_LABEL[it.kind] || it.kind) + "</span></div>" +
       titleHtml +
-      (it.desc ? "<p>" + esc(it.desc) + "</p>" : "") +
       "</div>" +
       side;
   }
