@@ -1338,9 +1338,10 @@ html[data-theme="light"] .m-field textarea { background: #fff; }
 }
 
 @media (max-width: 900px) {
+  /* 窄屏单列：正文在前，时间线在后，进站先看到最新一条的内容 */
   .info { grid-template-columns: 1fr; }
-  .tl { border-right: 0; border-bottom: 1px solid var(--line); padding-bottom: 14px; }
-  .info-body { padding: 22px 0 10px; }
+  .info-body { order: -1; padding: 0 0 22px; min-height: 0; }
+  .tl { border-right: 0; border-top: 1px solid var(--line); padding: 16px 0 4px 28px; }
 }
 
 /* ---------- 动态详情（#/post/N，视图内切换，不刷新整页） ---------- */
