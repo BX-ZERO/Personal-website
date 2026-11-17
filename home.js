@@ -66,6 +66,13 @@ window.BX_HOME = {
   },
   "entries": [
     {
+      "date": "2026-11-17",
+      "kind": "note",
+      "title": "coc-notify更新至v1.0.7",
+      "desc": "官方动作太快了，刚出咨询马上就在夯木节结束更新19本了，这谁追的上这更新速度😅",
+      "href": ""
+    },
+    {
       "date": "2026-11-15",
       "kind": "tool",
       "title": "错题复习工具",
