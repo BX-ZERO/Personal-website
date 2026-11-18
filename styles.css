@@ -1615,15 +1615,17 @@ html[data-theme="light"] .acc-stat {
   position: relative;
 }
 
+/* 播放器：底色跟随站点卡片，边框圆角 */
 .player {
   position: absolute;
   top: 42px;
   right: 0;
-  width: 216px;
-  padding: 14px 14px 12px;
-  border: 1px solid var(--line);
-  background: var(--nav-bg);
-  backdrop-filter: blur(14px);
+  width: 238px;
+  padding: 14px 12px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 14px;
+  background: var(--card-bg);
+  box-shadow: 0 22px 54px rgba(0, 0, 0, .46);
   z-index: 80;
   animation: playerIn 0.2s ease both;
 }
@@ -1631,6 +1633,16 @@ html[data-theme="light"] .acc-stat {
 @keyframes playerIn {
   from { opacity: 0; transform: translateY(-6px); }
   to { opacity: 1; transform: none; }
+}
+
+@keyframes playerOut {
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: translateY(-6px); }
+}
+
+.player.is-closing {
+  animation: playerOut 0.18s ease both;
+  pointer-events: none;
 }
 
 .player[hidden] {
@@ -1772,13 +1784,12 @@ html[data-theme="light"] .acc-stat {
 }
 
 html[data-theme="light"] .player {
-  background: #ffffff;
-  box-shadow: 0 12px 30px rgba(16, 24, 34, 0.08);
+  box-shadow: 0 20px 46px rgba(20, 40, 70, .16);
 }
 
 @media (max-width: 640px) {
   .player {
-    width: 190px;
+    width: 212px;
   }
 }
 
@@ -2838,3 +2849,65 @@ html[data-theme="light"] #view-home-edit .ent-row.is-on { background: rgba(53, 2
 }
 
 #view-home-edit .card > .ent-row:hover { background: none; }
+
+/* ---------- 播放器：播放方式与音乐列表 ---------- */
+
+.pl-btn.is-on {
+  color: var(--cyan);
+}
+
+.pl-name { padding: 0 2px; }
+
+.pl-list {
+  margin: 10px -4px 0;
+  padding: 8px 0 0;
+  border-top: 1px solid var(--line);
+  list-style: none;
+  max-height: 208px;
+  overflow: auto;
+}
+
+.pl-list[hidden] { display: none; }
+
+.pl-track {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--dim);
+  font: inherit;
+  font-size: 11.5px;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.18s ease, background 0.18s ease;
+}
+
+.pl-track:hover {
+  color: var(--title);
+  background: rgba(53, 216, 255, 0.08);
+}
+
+.pl-track.is-on {
+  color: var(--cyan);
+}
+
+.pl-track-i {
+  flex: 0 0 14px;
+  width: 14px;
+  font-family: var(--font-en);
+  opacity: 0.6;
+}
+
+.pl-track-t {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+html[data-theme="light"] .pl-track:hover {
+  background: rgba(20, 90, 125, 0.08);
+}

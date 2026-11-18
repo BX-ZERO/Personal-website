@@ -453,11 +453,16 @@
 
 
   var PLAY_KEY = "bxz-play";
+  var MODE_KEY = "bxz-mode";
 
 var ICON_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>';
   var ICON_PAUSE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>';
   var ICON_PREV = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg>';
   var ICON_NEXT = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 5h2v14h-2zM4 5l11 7-11 7z"/></svg>';
+  var ICON_MODE_ORDER = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10v2.2L21 5.6 17 2v2.2H5V11h2V7zm10 10H7v-2.2L3 18.4 7 22v-2.2h12V13h-2v4z"/></svg>';
+  var ICON_MODE_ONE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10v2.2L21 5.6 17 2v2.2H5V11h2V7zm10 10H7v-2.2L3 18.4 7 22v-2.2h12V13h-2v4z"/><path d="M12.6 9.1h-1.3l-1.6.9v1.2l1.5-.9v4.6h1.4z"/></svg>';
+  var ICON_MODE_SHUFFLE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.4 3H22v5.6h-2V6.4l-4.6 4.6-1.4-1.4L18.6 5h-2.2V3zM2 5h4.1l3.6 3.6-1.4 1.4L5.2 7H2V5zm14.4 10.6 1.4 1.4 1.8-1.8v2H22V21h-2.2v-2l-1.8 1.8-1.4-1.4 1.9-2-1.9-2zM2 17h3.2l3.1-3.1 1.4 1.4L5.8 19H2v-2z"/></svg>';
+  var ICON_LIST = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v2H4zM4 11h16v2H4zM4 16h16v2H4z"/></svg>';
 
   (function music() {
     var box = document.getElementById("player");
@@ -465,6 +470,9 @@ var ICON_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11
     var playBtn = document.getElementById("pl-play");
     var prevBtn = document.getElementById("pl-prev");
     var nextBtn = document.getElementById("pl-next");
+    var modeBtn = document.getElementById("pl-mode");
+    var listBtn = document.getElementById("pl-list-btn");
+    var listEl = document.getElementById("pl-list");
     if (!box) return;
 
     var cfg = HOME.music || {};
@@ -487,9 +495,26 @@ var ICON_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11
     var vol = typeof cfg.volume === "number" ? cfg.volume : 0.5;
     audio.volume = vol;
 
+    var MODES = ["order", "one", "shuffle"];
+    var MODE_LABEL = { order: "顺序播放", one: "单曲循环", shuffle: "随机播放" };
+    var MODE_ICON = { order: ICON_MODE_ORDER, one: ICON_MODE_ONE, shuffle: ICON_MODE_SHUFFLE };
+    var mode = load(MODE_KEY);
+    if (MODES.indexOf(mode) < 0) mode = "order";
+
     function load2(k) {
       index = (k + tracks.length) % tracks.length;
       audio.src = tracks[index].src;
+      renderList();
+    }
+
+    function renderList() {
+      if (!listEl) return;
+      listEl.innerHTML = tracks.map(function (t, i) {
+        return '<li><button class="pl-track' + (i === index ? " is-on" : "") + '" type="button" data-i="' + i + '">' +
+          '<span class="pl-track-i">' + (i + 1) + "</span>" +
+          '<span class="pl-track-t">' + esc(t.title || ("第 " + (i + 1) + " 首")) + "</span>" +
+          "</button></li>";
+      }).join("");
     }
 
     function refresh() {
@@ -497,7 +522,23 @@ var ICON_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11
       if (playBtn) playBtn.innerHTML = audio.paused ? ICON_PLAY : ICON_PAUSE;
       if (prevBtn) prevBtn.innerHTML = ICON_PREV;
       if (nextBtn) nextBtn.innerHTML = ICON_NEXT;
+      if (listBtn) listBtn.innerHTML = ICON_LIST;
+      if (modeBtn) {
+        modeBtn.innerHTML = MODE_ICON[mode];
+        modeBtn.title = "播放方式：" + MODE_LABEL[mode];
+        modeBtn.classList.toggle("is-on", mode !== "order");
+      }
       if (soundBtn) soundBtn.setAttribute("aria-pressed", audio.paused ? "true" : "false");
+      renderList();
+    }
+
+    function pickNext() {
+      if (mode === "shuffle" && tracks.length > 1) {
+        var k = index;
+        while (k === index) k = Math.floor(Math.random() * tracks.length);
+        return k;
+      }
+      return (index + 1) % tracks.length;
     }
 
     function play() {
@@ -507,7 +548,12 @@ var ICON_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11
     }
 
     audio.addEventListener("ended", function () {
-      load2(index + 1);
+      if (mode === "one") {
+        audio.currentTime = 0;
+        play();
+        return;
+      }
+      load2(pickNext());
       play();
     });
     audio.addEventListener("play", refresh);
@@ -538,26 +584,72 @@ var ICON_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11
       play();
     });
 
+    if (modeBtn) modeBtn.addEventListener("click", function () {
+      var at = MODES.indexOf(mode);
+      mode = MODES[(at + 1) % MODES.length];
+      store(MODE_KEY, mode);
+      refresh();
+    });
+
+    if (listBtn && listEl) listBtn.addEventListener("click", function () {
+      listEl.hidden = !listEl.hidden;
+      if (!listEl.hidden) renderList();
+    });
+
+    if (listEl) listEl.addEventListener("click", function (e) {
+      var b = e.target.closest("[data-i]");
+      if (!b) return;
+      load2(Number(b.dataset.i));
+      store(PLAY_KEY, "on");
+      play();
+    });
+
+    /* 开与关都走这两个函数，关的时候先放渐出动画再隐藏 */
+    var closeTimer = null;
+
+    function openPanel() {
+      if (closeTimer) {
+        clearTimeout(closeTimer);
+        closeTimer = null;
+      }
+      box.classList.remove("is-closing");
+      box.hidden = false;
+      refresh();
+    }
+
+    function closePanel() {
+      if (box.hidden || box.classList.contains("is-closing")) return;
+      if (listEl) listEl.hidden = true;
+      box.classList.add("is-closing");
+      closeTimer = setTimeout(function () {
+        box.hidden = true;
+        box.classList.remove("is-closing");
+        closeTimer = null;
+      }, 180);
+    }
+
     window.BXPlayer = {
       togglePanel: function () {
-        if (box.hidden) {
-          box.hidden = false;
-          refresh();
-        } else {
-          box.hidden = true;
-        }
+        if (box.hidden) openPanel();
+        else closePanel();
       }
     };
 
+    /* 面板里的点击一律拦在面板内：按钮刷新会替换节点，等冒泡到 document 时
+       原来的 target 已经不在文档里，contains 会误判成外部点击把面板关掉。 */
+    box.addEventListener("click", function (e) { e.stopPropagation(); });
+
     document.addEventListener("click", function (e) {
       if (box.hidden) return;
+      var path = e.composedPath ? e.composedPath() : [];
+      if (path.indexOf(box) >= 0) return;
       if (box.contains(e.target)) return;
-      if (soundBtn && soundBtn.contains(e.target)) return;
-      box.hidden = true;
+      if (soundBtn && (path.indexOf(soundBtn) >= 0 || soundBtn.contains(e.target))) return;
+      closePanel();
     });
 
     document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && !box.hidden) box.hidden = true;
+      if (e.key === "Escape" && !box.hidden) closePanel();
     });
 
     /* 只有上次是要听的时候，才等一次交互把被拦下的播放接着放；
