@@ -51,6 +51,14 @@ window.BX_HOME = {
       {
         "title": "KNOW MY NAME",
         "src": "music/know-my-name.mp3"
+      },
+      {
+        "title": "Misty Memory (Day Version)",
+        "src": "music/1795003004542-5bi6bt.m4a"
+      },
+      {
+        "title": "直到大地变成一颗酸橙",
+        "src": "music/1795003037497-pg3bae.m4a"
       }
     ]
   },
