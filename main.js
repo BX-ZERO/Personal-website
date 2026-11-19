@@ -161,8 +161,30 @@
       .forEach(function (m) { m.muted = root.dataset.sound === "off"; });
   }
 
-  applyTheme(load(THEME_KEY) === "light" ? "light" : "dark");
+  /* 没手动选过就跟随系统；选过就一直用他选的 */
+  function systemTheme() {
+    try {
+      if (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches) return "light";
+    } catch (e) { /* 忽略 */ }
+    return "dark";
+  }
+
+  function pickedTheme() {
+    var saved = load(THEME_KEY);
+    return saved === "light" || saved === "dark" ? saved : null;
+  }
+
+  applyTheme(pickedTheme() || systemTheme());
   applySound(load(SOUND_KEY) === "off" ? "off" : "on");
+
+  try {
+    var mqLight = window.matchMedia ? window.matchMedia("(prefers-color-scheme: light)") : null;
+    if (mqLight && mqLight.addEventListener) {
+      mqLight.addEventListener("change", function () {
+        if (!pickedTheme()) applyTheme(systemTheme());
+      });
+    }
+  } catch (e) { /* 忽略 */ }
 
   if (themeBtn) {
     themeBtn.addEventListener("click", function () {

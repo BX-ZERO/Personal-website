@@ -20,6 +20,25 @@
 <link rel="icon" href="img/bx-icon.ico" sizes="any">
 <link rel="icon" type="image/png" href="img/bx-icon.png">
 <link rel="apple-touch-icon" href="img/bx-icon.png">
+<script id="bxz-theme-boot">
+/* 在样式加载前定好主题，避免白天模式先闪一下深色 */
+(function () {
+  var t = null;
+  try { t = localStorage.getItem("bxz-theme"); } catch (e) { /* 忽略 */ }
+  if (t !== "light" && t !== "dark") {
+    try {
+      var m = /(?:^|; )bxz-theme=([^;]*)/.exec(document.cookie);
+      if (m) t = decodeURIComponent(m[1]);
+    } catch (e) { /* 忽略 */ }
+  }
+  if (t !== "light" && t !== "dark") {
+    try {
+      t = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+    } catch (e) { t = "dark"; }
+  }
+  document.documentElement.dataset.theme = t;
+})();
+</script>
 <link rel="stylesheet" href="styles.css?v=20261116z25">
 </head>
 <body>
@@ -450,7 +469,7 @@
     })();
   </script>
 <script src="auth.js?v=20261116z25"></script>
-<script src="main.js?v=20261116z27"></script>
+<script src="main.js?v=20261116z28"></script>
 <script>
 (function () {
   "use strict";
