@@ -139,8 +139,18 @@
       if (!ticket) return Promise.resolve({ ok: false, reason: "none" });
       /* 五分钟内复用上一次结果，切页、切视图不再重复打 Worker */
       if (!force && meCache && Date.now() - meAt < 300000) return meCache;
+      /* 八秒还没回应就当连不上，否则请求挂住时页面会一直空着 */
+      var ctrl = null;
+      var timer = null;
+      try {
+        if (window.AbortController) {
+          ctrl = new AbortController();
+          timer = setTimeout(function () { try { ctrl.abort(); } catch (e) { /* 忽略 */ } }, 8000);
+        }
+      } catch (e) { ctrl = null; }
       meCache = fetch(WORKER + "/me", {
-        headers: { authorization: "Bearer " + ticket }
+        headers: { authorization: "Bearer " + ticket },
+        signal: ctrl ? ctrl.signal : undefined
       })
         .then(function (r) {
           return r.json().then(function (data) {
@@ -149,7 +159,11 @@
         })
         .catch(function (e) {
           meCache = null;
-          return { ok: false, status: 0, reason: "连不上 Worker" };
+          return { ok: false, status: 0, reason: (e && e.name === "AbortError") ? "Worker 八秒没回应" : "连不上 Worker" };
+        })
+        .then(function (v) {
+          if (timer) clearTimeout(timer);
+          return v;
         });
       meAt = Date.now();
       return meCache;

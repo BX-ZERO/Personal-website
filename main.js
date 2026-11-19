@@ -799,6 +799,8 @@ var ICON_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11
       accSignedOut();
       return;
     }
+    /* 等网络的时候先把话说清楚，别让整页空着 */
+    accBox.innerHTML = '<p class="acc-note">正在确认登录状态…</p>';
     window.BXAuth.me().then(function (who) {
       if (who && who.ok) accSignedIn(who);
       else accSignedOut();
