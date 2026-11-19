@@ -769,6 +769,7 @@ var ICON_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11
       '<div class="acc-stat"><b>—</b><span>总访问</span></div>' +
       '<div class="acc-stat"><b>—</b><span>今天</span></div>' +
       '<div class="acc-stat"><b>—</b><span>独立访客</span></div>' +
+      '<div class="acc-foot"><button class="acc-reset" id="acc-reset" type="button">重置统计</button></div>' +
       "</div>";
     accLoaded = true;
     loadStats();
@@ -780,6 +781,8 @@ var ICON_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11
         syncOwner();
       });
     }
+    var resetBtn = document.getElementById("acc-reset");
+    if (resetBtn) resetBtn.addEventListener("click", doResetStats);
   }
 
   function renderAccount(force) {
@@ -834,6 +837,38 @@ var ICON_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11
       nums[2].textContent = fmtNum(d.uv);
     }).catch(function () {
       box.classList.add("is-off");
+    });
+  }
+
+  function doResetStats() {
+    if (!window.BXAuth || !window.BXAuth.resetStats) return;
+    if (!window.confirm("把总访问、今天、独立访客全部清零？删掉的数据找不回来。")) return;
+    var btn = document.getElementById("acc-reset");
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = "重置中…";
+    }
+    window.BXAuth.resetStats().then(function (d) {
+      /* KV 删除要几十秒才传播，先把数字就地抹平，别让人以为没生效 */
+      var box = document.getElementById("acc-stats");
+      if (box) {
+        var nums = box.querySelectorAll("b");
+        for (var k = 0; k < nums.length; k++) nums[k].textContent = "0";
+      }
+      if (btn) btn.textContent = "已清掉 " + fmtNum(d.deleted) + " 条";
+      setTimeout(function () {
+        loadStats(); /* 过几秒再拉一次，兜住 KV 的最终一致 */
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = "重置统计";
+        }
+      }, 2200);
+    }).catch(function (e) {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = "重置统计";
+      }
+      window.alert("重置失败：" + (e && e.message ? e.message : "未知错误"));
     });
   }
 

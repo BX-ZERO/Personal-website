@@ -1594,6 +1594,34 @@ html[data-theme="light"] .pw input { background: #fff; }
   color: var(--dim);
 }
 
+/* 重置统计：低调的小按钮，不抢三个数字的注意力 */
+.acc-foot {
+  margin-top: 12px;
+  max-width: 560px;
+}
+
+.acc-reset {
+  padding: 7px 14px;
+  font-family: var(--font-en);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  color: var(--dim);
+  background: transparent;
+  border: 1px solid var(--line);
+  cursor: pointer;
+  transition: color 0.16s ease, border-color 0.16s ease;
+}
+
+.acc-reset:hover:not(:disabled) {
+  color: var(--cyan);
+  border-color: var(--cyan);
+}
+
+.acc-reset:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
 .acc-stats.is-off {
   display: none;
 }

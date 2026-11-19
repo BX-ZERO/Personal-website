@@ -236,6 +236,20 @@
           return data;
         });
       });
+    },
+
+    resetStats: function () {
+      var ticket = get(TICKET_KEY);
+      if (!ticket) return Promise.reject(new Error("没有登录"));
+      return fetch(WORKER + "/reset-stats", {
+        method: "POST",
+        headers: { authorization: "Bearer " + ticket }
+      }).then(function (r) {
+        return r.json().then(function (data) {
+          if (!r.ok || !data.ok) throw new Error(data.error || ("HTTP " + r.status));
+          return data;
+        });
+      });
     }
   };
 
