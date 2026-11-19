@@ -202,6 +202,13 @@
     /* 访问统计：站主自己带着票打开页面时不计数 */
     hit: function () {
       if (get(TICKET_KEY)) return Promise.resolve({ ok: false, skipped: "owner" });
+      /* 同一个标签页里翻来翻去只算一次，刷新也不重复计 */
+      try {
+        if (sessionStorage.getItem("bxz-hit") === "1") {
+          return Promise.resolve({ ok: false, skipped: "session" });
+        }
+        sessionStorage.setItem("bxz-hit", "1");
+      } catch (e) { /* 存不了就照常报一次 */ }
       try {
         return fetch(WORKER + "/hit", {
           method: "POST",
