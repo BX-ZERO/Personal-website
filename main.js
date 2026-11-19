@@ -447,7 +447,6 @@
   }
 
   window.addEventListener("hashchange", route);
-  route();
 
   /* ---------- 背景音乐播放器 ---------- */
 
@@ -815,6 +814,9 @@ var ICON_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11
       box.classList.add("is-off");
     });
   }
+
+  /* 所有节点与函数都定义完之后再走首屏路由，避免拿到 undefined */
+  route();
 
   syncOwner();
 
