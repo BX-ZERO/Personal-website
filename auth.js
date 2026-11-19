@@ -36,6 +36,33 @@
     try { document.cookie = key + "=; max-age=0; path=/"; } catch (e) { /* 忽略 */ }
   }
 
+  /* 访客标识：第一次访问随机生成，之后一直带着它。
+     它不代表任何个人信息，只用来让同一台设备一天只算一个独立访客。 */
+
+  var VID_KEY = "bxz-vid";
+
+  function visitorId() {
+    var v = get(VID_KEY);
+    if (v && /^[0-9a-f]{32}$/.test(v)) return v;
+    var out = "";
+    try {
+      var arr = new Uint8Array(16);
+      (window.crypto || window.msCrypto).getRandomValues(arr);
+      for (var i = 0; i < arr.length; i++) {
+        out += ("0" + arr[i].toString(16)).slice(-2);
+      }
+    } catch (e) { out = ""; }
+    if (!out) {
+      for (var k = 0; k < 32; k++) out += Math.floor(Math.random() * 16).toString(16);
+    }
+    try { localStorage.setItem(VID_KEY, out); } catch (e) { /* 忽略 */ }
+    try {
+      document.cookie = VID_KEY + "=" + out +
+        "; max-age=" + (365 * 24 * 3600) + "; path=/; SameSite=Lax";
+    } catch (e) { /* 忽略 */ }
+    return out;
+  }
+
   /* 从 GitHub 回来时，地址里带 #auth=... */
 
   (function capture() {
@@ -213,7 +240,7 @@
         return fetch(WORKER + "/hit", {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: "{}",
+          body: JSON.stringify({ vid: visitorId() }),
           keepalive: true
         })
           .then(function (r) {
