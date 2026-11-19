@@ -49,6 +49,10 @@ window.BX_HOME = {
     "volume": 0.5,
     "tracks": [
       {
+        "title": "Going 4 Gold",
+        "src": "music/1795066151432-diaanm.mp3"
+      },
+      {
         "title": "KNOW MY NAME",
         "src": "music/know-my-name.mp3"
       },
