@@ -762,6 +762,8 @@ var ICON_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11
   }
 
   function renderAccount(force) {
+    /* 首次路由可能早于本模块初始化，这里每次重新取一次节点 */
+    if (!accBox) accBox = document.getElementById("acc-box");
     if (!accBox) return;
     if (accLoaded && !force) return;
     if (!window.BXAuth) {
