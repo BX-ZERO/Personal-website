@@ -7,7 +7,7 @@
 (function () {
   "use strict";
 
-  var WORKER = "https://bxzero-auth.dosomethingforme.workers.dev";
+  var WORKER = "https://api.bxzero.cn";
   var TICKET_KEY = "bxz-ticket";
   var KEEP_DAYS = 30;
 

@@ -27,21 +27,21 @@ window.BX_HOME = {
       "cn": "错题复习",
       "en": "quiz-review",
       "desc": "",
-      "href": "https://bx-zero.github.io/quiz-review/",
+      "href": "https://quiz.bxzero.cn/",
       "tag": "WEB TOOL"
     },
     {
       "cn": "明日方舟活动代币计算器",
       "en": "arknights-event-calc",
       "desc": "",
-      "href": "https://bx-zero.github.io/arknights-event-calc/",
+      "href": "https://calc.bxzero.cn/",
       "tag": "CALCULATOR"
     },
     {
       "cn": "部落冲突通知助手",
       "en": "coc-notify",
       "desc": "",
-      "href": "https://bx-zero.github.io/coc-notify/",
+      "href": "https://coc.bxzero.cn/",
       "tag": "NOTIFY"
     }
   ],
@@ -85,21 +85,21 @@ window.BX_HOME = {
       "kind": "tool",
       "title": "错题复习工具",
       "desc": "在备考安全员，刷题的微信小程序太垃圾了，让DSH搓了一个",
-      "href": "https://bx-zero.github.io/quiz-review/"
+      "href": "https://quiz.bxzero.cn/"
     },
     {
       "date": "2026-11-05",
       "kind": "tool",
       "title": "明日方舟活动代币计算器",
       "desc": "全网没找到能用的活动代币计算器，让DSH搓了一个",
-      "href": "https://bx-zero.github.io/arknights-event-calc/"
+      "href": "https://calc.bxzero.cn/"
     },
     {
       "date": "2026-11-12",
       "kind": "tool",
       "title": "部落冲突升级通知助手",
       "desc": "微信小程序那个要反复增加订阅也太烦了，借助CF能一直通知了",
-      "href": "https://bx-zero.github.io/coc-notify/"
+      "href": "https://coc.bxzero.cn/"
     }
   ]
 };
