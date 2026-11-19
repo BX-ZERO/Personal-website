@@ -103,20 +103,36 @@
     },
 
     /* 密码登录：不跳 GitHub，Worker 核对后直接给一张票 */
+    /* 密码登录：不跳 GitHub，Worker 核对后直接给一张票 */
     loginWithPassword: function (password) {
+      /* 十二秒没回应就当连不上：国内直连 Cloudflare 常被阻断 */
+      var ctrl = null;
+      var timer = null;
+      try {
+        if (window.AbortController) {
+          ctrl = new AbortController();
+          timer = setTimeout(function () { try { ctrl.abort(); } catch (e) { /* 忽略 */ } }, 12000);
+        }
+      } catch (e) { ctrl = null; }
       return fetch(WORKER + "/passport", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ password: String(password || "") })
+        body: JSON.stringify({ password: String(password || "") }),
+        signal: ctrl ? ctrl.signal : undefined
       }).catch(function (e) {
+        if (timer) clearTimeout(timer);
+        if (e && e.name === "AbortError") {
+          throw new Error("十二秒没有回应，多半是直连不到 api.bxzero.cn。开代理再试。");
+        }
         /* fetch 自己抛 TypeError 只有两种可能：跨域被拒，或者根本连不上 */
         if (e && e.name === "TypeError") {
           throw new Error(location.protocol === "file:"
             ? "现在是用 file:// 打开的文件，浏览器不许它连 Worker。改用 http://localhost:8123 打开这一页。"
-            : "连不上 Worker，检查这台机器能不能访问 workers.dev。");
+            : "连不上 api.bxzero.cn。Cloudflare 在国内常被阻断，先开代理再试。");
         }
         throw e;
       }).then(function (r) {
+        if (timer) clearTimeout(timer);
         return r.json().then(function (data) {
           if (!r.ok || !data.ticket) throw new Error(data.error || ("HTTP " + r.status));
           put(TICKET_KEY, data.ticket);
