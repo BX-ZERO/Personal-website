@@ -76,7 +76,7 @@ window.BX_HOME = {
     {
       "date": "2026-11-19",
       "kind": "note",
-      "title": "赤巨资买了个域名",
+      "title": "斥巨资买了个域名",
       "desc": "bxzero.cn，我了一分钱没给我优惠啊阿里云",
       "href": ""
     },
