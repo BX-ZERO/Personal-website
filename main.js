@@ -856,13 +856,19 @@ var ICON_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11
         for (var k = 0; k < nums.length; k++) nums[k].textContent = "0";
       }
       if (btn) btn.textContent = "已清掉 " + fmtNum(d.deleted) + " 条";
+      /* 按钮两秒后复位 */
       setTimeout(function () {
-        loadStats(); /* 过几秒再拉一次，兜住 KV 的最终一致 */
         if (btn) {
           btn.disabled = false;
           btn.textContent = "重置统计";
         }
       }, 2200);
+      /* KV 删除有几十秒才传播完，隔几秒再拉几次，直到数字真的归零 */
+      var tries = 0;
+      (function again() {
+        loadStats();
+        if (++tries < 4) setTimeout(again, 3000);
+      })();
     }).catch(function (e) {
       if (btn) {
         btn.disabled = false;
