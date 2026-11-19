@@ -863,12 +863,8 @@ var ICON_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11
           btn.textContent = "重置统计";
         }
       }, 2200);
-      /* KV 删除有几十秒才传播完，隔几秒再拉几次，直到数字真的归零 */
-      var tries = 0;
-      (function again() {
-        loadStats();
-        if (++tries < 4) setTimeout(again, 3000);
-      })();
+      /* 不再回拉：KV 的 list 最长要一分钟才看不到已删除的键，
+         这时候查回来的还是旧数字，会把刚抹平的 0 又盖回去。 */
     }).catch(function (e) {
       if (btn) {
         btn.disabled = false;
