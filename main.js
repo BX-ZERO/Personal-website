@@ -799,12 +799,44 @@ var ICON_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11
       accSignedOut();
       return;
     }
-    /* 等网络的时候先把话说清楚，别让整页空着 */
-    accBox.innerHTML = '<p class="acc-note">正在确认登录状态…</p>';
+    /* 有票就当场画出来，账号名用上次登录记住的，别让人对着「正在确认」等网络 */
+    var cached = (window.BXAuth.cachedLogin && window.BXAuth.cachedLogin()) || "BX-ZERO";
+    accSignedIn({ login: cached });
     window.BXAuth.me().then(function (who) {
-      if (who && who.ok) accSignedIn(who);
-      else accSignedOut();
+      if (who && who.ok) {
+        if (who.login && who.login !== cached) accSignedIn(who);
+        return;
+      }
+      /* status 为 0 是没连上，票还在；只有 401 才是真过期 */
+      if (who && who.status === 0) {
+        accOffline(who.reason);
+        return;
+      }
+      accSignedOut();
     }).catch(function () { accSignedOut(); });
+  }
+
+  /* 票还在但这次连不上：给重试，不逼人重新输密码 */
+  function accOffline(reason) {
+    if (!accBox) return;
+    var name = (window.BXAuth.cachedLogin && window.BXAuth.cachedLogin()) || "BX-ZERO";
+    accBox.innerHTML =
+      '<div class="acc-card"><div class="acc-who">' +
+      '<div class="acc-name">' + esc(String(name).toUpperCase()) + "</div>" +
+      '<div class="acc-sub">已登录，这次没连上：' + esc(reason || "连不上 Worker") + "。开代理再点重试。</div>" +
+      "</div></div>" +
+      '<div class="acc-actions">' +
+      '<button class="m-btn m-btn-main" id="acc-retry" type="button">重试</button>' +
+      '<button class="m-btn" id="acc-logout2" type="button">退出登录</button>' +
+      "</div>";
+    var retry = document.getElementById("acc-retry");
+    if (retry) retry.addEventListener("click", function () { renderAccount(true); });
+    var out = document.getElementById("acc-logout2");
+    if (out) out.addEventListener("click", function () {
+      accSignedOut();
+      if (window.BXAuth) window.BXAuth.logout();
+      syncOwner();
+    });
   }
 
   /* ---------- 站主入口 ---------- */

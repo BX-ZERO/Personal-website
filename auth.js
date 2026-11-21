@@ -9,6 +9,8 @@
 
   var WORKER = "https://api.bxzero.cn";
   var TICKET_KEY = "bxz-ticket";
+  /* 上次登录的账号名，用来在等 /me 的时候先把界面画出来 */
+  var LOGIN_KEY = "bxz-login";
   var KEEP_DAYS = 30;
 
   /* 票据同时写 localStorage 与 cookie：
@@ -88,6 +90,11 @@
       return get(TICKET_KEY);
     },
 
+    /* 上次登录记住的名字，没有就 null */
+    cachedLogin: function () {
+      return get(LOGIN_KEY);
+    },
+
     /* 有没有票，页面先用这个判断，没有就直接按未登录渲染，不发请求 */
     signedIn: function () {
       return !!get(TICKET_KEY);
@@ -136,6 +143,7 @@
         return r.json().then(function (data) {
           if (!r.ok || !data.ticket) throw new Error(data.error || ("HTTP " + r.status));
           put(TICKET_KEY, data.ticket);
+          put(LOGIN_KEY, data.login || "BX-ZERO");
           meCache = null;
           meAt = 0;
           return data;
@@ -145,6 +153,7 @@
 
     logout: function () {
       drop(TICKET_KEY);
+      drop(LOGIN_KEY);
       meCache = null;
       meAt = 0;
       location.reload();
@@ -155,13 +164,13 @@
       if (!ticket) return Promise.resolve({ ok: false, reason: "none" });
       /* 五分钟内复用上一次结果，切页、切视图不再重复打 Worker */
       if (!force && meCache && Date.now() - meAt < 300000) return meCache;
-      /* 八秒还没回应就当连不上，否则请求挂住时页面会一直空着 */
+      /* 二十秒还没回应就当连不上：Worker 冷启动实测要 10.4 秒 */
       var ctrl = null;
       var timer = null;
       try {
         if (window.AbortController) {
           ctrl = new AbortController();
-          timer = setTimeout(function () { try { ctrl.abort(); } catch (e) { /* 忽略 */ } }, 8000);
+          timer = setTimeout(function () { try { ctrl.abort(); } catch (e) { /* 忽略 */ } }, 20000);
         }
       } catch (e) { ctrl = null; }
       meCache = fetch(WORKER + "/me", {
@@ -170,12 +179,13 @@
       })
         .then(function (r) {
           return r.json().then(function (data) {
+            if (data && data.ok && data.login) put(LOGIN_KEY, data.login);
             return { ok: !!data.ok, status: r.status, login: data.login, reason: r.ok ? "" : (data.error || ("HTTP " + r.status)) };
           });
         })
         .catch(function (e) {
           meCache = null;
-          return { ok: false, status: 0, reason: (e && e.name === "AbortError") ? "Worker 八秒没回应" : "连不上 Worker" };
+          return { ok: false, status: 0, reason: (e && e.name === "AbortError") ? "Worker 二十秒没回应" : "连不上 Worker" };
         })
         .then(function (v) {
           if (timer) clearTimeout(timer);
