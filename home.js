@@ -24,13 +24,6 @@ window.BX_HOME = {
   ],
   "tools": [
     {
-      "cn": "错题复习",
-      "en": "quiz-review",
-      "desc": "",
-      "href": "https://quiz.bxzero.cn/",
-      "tag": "WEB TOOL"
-    },
-    {
       "cn": "明日方舟活动代币计算器",
       "en": "arknights-event-calc",
       "desc": "",
@@ -43,6 +36,13 @@ window.BX_HOME = {
       "desc": "",
       "href": "https://coc.bxzero.cn/",
       "tag": "NOTIFY"
+    },
+    {
+      "cn": "错题复习",
+      "en": "quiz-review",
+      "desc": "",
+      "href": "https://quiz.bxzero.cn/",
+      "tag": "WEB TOOL"
     }
   ],
   "music": {
@@ -53,16 +53,16 @@ window.BX_HOME = {
         "src": "music/1795066151432-diaanm.mp3"
       },
       {
-        "title": "KNOW MY NAME",
-        "src": "music/know-my-name.mp3"
-      },
-      {
         "title": "Misty Memory (Day Version)",
         "src": "music/1795003004542-5bi6bt.m4a"
       },
       {
         "title": "直到大地变成一颗酸橙",
         "src": "music/1795003037497-pg3bae.m4a"
+      },
+      {
+        "title": "KNOW MY NAME",
+        "src": "music/know-my-name.mp3"
       }
     ]
   },
