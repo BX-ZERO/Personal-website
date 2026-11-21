@@ -24,6 +24,7 @@
     navItems.forEach(function (a) {
       a.classList.toggle("is-active", a.dataset.view === name);
     });
+    document.body.dataset.view = name;
     if (name === "account") renderAccount();
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -439,8 +440,129 @@
     postBody.innerHTML =
       '<div class="post-date">' + esc(String(m.date || "").replace(/-/g, ".")) + "</div>" +
       '<h1 class="post-title">' + inline(m.title || "（无标题）") + "</h1>" +
-      '<div class="article">' + bodyToHtml(m.body) + "</div>";
+      '<div class="article">' + bodyToHtml(m.body) + "</div>" +
+      '<section class="cmt" id="cmt-box"></section>';
+    renderComments(m);
     return true;
+  }
+
+  /* ---------- 评论区 ---------- */
+
+  function postKeyOf(m) {
+    return String(m.date || "") + "|" + String(m.title || "无标题");
+  }
+
+  function fmtCommentTime(ts) {
+    var d = new Date(ts);
+    var p = function (n) { return (n < 10 ? "0" : "") + n; };
+    return d.getFullYear() + "." + p(d.getMonth() + 1) + "." + p(d.getDate()) + " " + p(d.getHours()) + ":" + p(d.getMinutes());
+  }
+
+  function renderComments(m) {
+    var box = document.getElementById("cmt-box");
+    if (!box) return;
+    var key = postKeyOf(m);
+    box.innerHTML =
+      '<div class="cmt-head"><span class="cmt-en">COMMENT</span>' +
+      '<span class="cmt-count" id="cmt-count"></span></div>' +
+      '<form class="cmt-form" id="cmt-form">' +
+      '<textarea class="cmt-input" id="cmt-input" rows="3" maxlength="500" placeholder="说点什么。"></textarea>' +
+      '<div class="cmt-act"><span class="cmt-msg" id="cmt-msg"></span>' +
+      '<button class="cmt-send" id="cmt-send" type="submit">发送</button></div></form>' +
+      '<ol class="cmt-list" id="cmt-list"><li class="cmt-empty">正在取评论…</li></ol>';
+
+    var form = document.getElementById("cmt-form");
+    if (form) {
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        sendComment(key);
+      });
+    }
+
+    var list = document.getElementById("cmt-list");
+    if (list) {
+      list.addEventListener("click", function (e) {
+        var btn = e.target.closest(".cmt-del");
+        if (!btn) return;
+        if (!window.confirm("删掉这条评论？删了就找不回来。")) return;
+        btn.disabled = true;
+        window.BXAuth.deleteComment(key, Number(btn.dataset.time)).then(function () {
+          loadComments(key);
+        }).catch(function (err) {
+          btn.disabled = false;
+          var box = document.getElementById("cmt-list");
+          if (box) box.innerHTML = '<li class="cmt-empty">删除失败：' + esc(err.message) + '</li>';
+        });
+      });
+    }
+
+    loadComments(key);
+  }
+
+  function loadComments(key) {
+    var count = document.getElementById("cmt-count");
+    if (!window.BXAuth || !window.BXAuth.comments) {
+      var l0 = document.getElementById("cmt-list");
+      if (l0) l0.innerHTML = '<li class="cmt-empty">评论还没加载好，刷新一次试试。</li>';
+      return;
+    }
+    window.BXAuth.comments(key).then(function (items) {
+      if (count) count.textContent = items.length ? String(items.length) : "";
+      var box = document.getElementById("cmt-list");
+      if (!box) return;
+      if (!items.length) {
+        box.innerHTML = '<li class="cmt-empty">还没有人评论。</li>';
+        return;
+      }
+      box.innerHTML = items.map(function (it) {
+        return '<li class="cmt-item"><div class="cmt-meta"><span class="cmt-who">访客</span>' +
+          '<time>' + fmtCommentTime(it.time) + '</time>' +
+          (isOwner ? '<button class="cmt-del" type="button" data-time="' + it.time + '" title="删除这条评论">×</button>' : '') +
+          '</div>' +
+          '<p>' + esc(it.text) + '</p></li>';
+      }).join("");
+    }).catch(function (e) {
+      var box = document.getElementById("cmt-list");
+      if (box) box.innerHTML = '<li class="cmt-empty">取评论失败：' + esc(e.message) + '</li>';
+    });
+  }
+
+  function sendComment(key) {
+    var input = document.getElementById("cmt-input");
+    var msg = document.getElementById("cmt-msg");
+    var btn = document.getElementById("cmt-send");
+    var text = input ? String(input.value || "").trim() : "";
+    if (!text) {
+      if (msg) msg.textContent = "写点什么再发。";
+      return;
+    }
+    if (btn) { btn.disabled = true; btn.textContent = "发送中…"; }
+    if (msg) msg.textContent = "";
+    window.BXAuth.comment(key, text).then(function () {
+      if (input) input.value = "";
+      if (btn) { btn.disabled = false; btn.textContent = "发送"; }
+      loadComments(key);
+
+    var list = document.getElementById("cmt-list");
+    if (list) {
+      list.addEventListener("click", function (e) {
+        var btn = e.target.closest(".cmt-del");
+        if (!btn) return;
+        if (!window.confirm("删掉这条评论？删了就找不回来。")) return;
+        btn.disabled = true;
+        window.BXAuth.deleteComment(key, Number(btn.dataset.time)).then(function () {
+          loadComments(key);
+        }).catch(function (err) {
+          btn.disabled = false;
+          var box = document.getElementById("cmt-list");
+          if (box) box.innerHTML = '<li class="cmt-empty">删除失败：' + esc(err.message) + '</li>';
+        });
+      });
+    }
+    }).catch(function (e) {
+      if (msg) msg.textContent = e.message;
+      if (btn) { btn.disabled = false; btn.textContent = "发送"; }
+    });
   }
 
   function route() {
@@ -844,10 +966,14 @@ var ICON_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11
   var editEntry = document.getElementById("edit-entry");
   var editHome = document.getElementById("edit-home");
 
+  var isOwner = false;
   function syncOwner() {
     if (!window.BXAuth) return;
     window.BXAuth.me().then(function (who) {
       var ok = !!(who && who.ok);
+      isOwner = ok;
+      /* 确认站主身份之后再画一次评论，删除按钮才出得来 */
+      if (ok && /^#\/post\/\d+$/.test(location.hash || "")) route();
       if (editEntry) editEntry.hidden = !ok;
       if (editHome) editHome.hidden = !ok;
     }).catch(function () { /* 忽略 */ });
@@ -907,6 +1033,49 @@ var ICON_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11
       window.alert("重置失败：" + (e && e.message ? e.message : "未知错误"));
     });
   }
+
+  /* ---------- 双击正文图片看原图 ---------- */
+
+  function lbNode() { return document.getElementById("lightbox"); }
+
+  function openLightbox(img) {
+    var lb = lbNode();
+    var lbImg = document.getElementById("lightbox-img");
+    if (!lb || !lbImg || !img) return;
+    lbImg.src = img.currentSrc || img.src || "";
+    lb.hidden = false;
+    document.body.classList.add("is-locked");
+  }
+
+  function closeLightbox() {
+    var lb = lbNode();
+    if (!lb) return;
+    lb.hidden = true;
+    document.body.classList.remove("is-locked");
+    var lbImg = document.getElementById("lightbox-img");
+    if (lbImg) lbImg.removeAttribute("src");
+  }
+
+  document.addEventListener("dblclick", function (e) {
+    var img = e.target.closest ? e.target.closest("img") : null;
+    if (!img) return;
+    if (img.id === "lightbox-img") return;
+    if (!img.closest(".article, #post-body, .float-scroll")) return;
+    e.preventDefault();
+    openLightbox(img);
+  });
+
+  document.addEventListener("click", function (e) {
+    var lb = lbNode();
+    if (!lb || lb.hidden) return;
+    if (e.target === lb || e.target.id === "lightbox-close") closeLightbox();
+  });
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "Escape") return;
+    var lb = lbNode();
+    if (lb && !lb.hidden) closeLightbox();
+  });
 
   /* 所有节点与函数都定义完之后再走首屏路由，避免拿到 undefined */
   route();

@@ -1415,8 +1415,8 @@ html[data-theme="light"] .m-field textarea { background: #fff; }
 
 .article img {
   display: block;
-  max-width: min(100%, 480px);
-  max-height: 520px;
+  width: 100%;
+  max-width: 100%;
   height: auto;
   margin: 22px auto;
   border: 1px solid var(--line);
@@ -2341,7 +2341,7 @@ html[data-theme="light"] .player {
     color: var(--dimmer);
   }
 
-  .rt-body img, .article img { max-width: min(100%, 480px); max-height: 520px; height: auto; display: block; margin: 16px auto; }
+  .rt-body img { max-width: min(100%, 480px); max-height: 520px; height: auto; display: block; margin: 16px auto; }
 
   /* 编辑区里不渲染图片本身，只留一枚标签 */
   .rt-body img { display: none; }
@@ -2545,7 +2545,8 @@ html[data-theme="light"] .player {
   html[data-theme="light"] .entry:hover { background: rgba(53, 216, 255, .08); }
   html[data-theme="light"] .row-del { border-color: rgba(0, 0, 0, .18); color: #6d7783; }
   /* 写作台预览框里的图保持小一号，别撑满整栏 */
-#preview .article img, #float-body .article img { max-width: 300px; margin: 12px auto; }
+#preview .article img { max-width: 300px; margin: 12px auto; }
+#float-body .article img { max-width: min(100%, 480px); max-height: 520px; height: auto; margin: 16px auto; }
 
 html[data-theme="light"] .preview { background: #f6f8fa; }
   html[data-theme="light"] .gate { background: #eef2f6; }
@@ -2810,16 +2811,14 @@ html[data-theme="light"] .preview { background: #f6f8fa; }
 #view-home-edit .ent-row {
   display: flex;
   align-items: center;
-  gap: 12px;
   width: 100%;
-  padding: 12px 14px;
+  padding: 0;
   font: inherit;
   font-size: 13.5px;
   text-align: left;
   color: var(--text);
   background: none;
   border: 1px solid var(--line);
-  cursor: pointer;
   transition: background .2s ease, border-color .2s ease;
 }
 
@@ -2867,6 +2866,57 @@ html[data-theme="light"] #view-home-edit .ent-row.is-on { background: rgba(53, 2
   letter-spacing: .12em;
   color: var(--cyan);
 }
+
+#view-home-edit .ent-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+  padding: 12px 14px;
+  font: inherit;
+  font-size: 13.5px;
+  text-align: left;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+#view-home-edit .ent-tools {
+  display: flex;
+  gap: 4px;
+  padding-right: 12px;
+}
+
+#view-home-edit .ent-move {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  font-size: 12px;
+  line-height: 1;
+  color: var(--dim);
+  background: none;
+  border: 1px solid var(--line);
+  cursor: pointer;
+  transition: color .15s ease, border-color .15s ease;
+}
+
+#view-home-edit .ent-move:hover {
+  color: var(--cyan);
+  border-color: rgba(53, 216, 255, .4);
+}
+
+html[data-theme="light"] #view-home-edit .ent-move {
+  border-color: #d8dee6;
+  color: #6d7783;
+}
+
+/* 展开的卡片里已有上移下移，头部不再重复 */
+#view-home-edit .card > .ent-row .ent-tools { display: none; }
+
 
 /* 展开态：卡片内部这一行不要自己的边框 */
 #view-home-edit .card > .ent-row {
@@ -2939,3 +2989,145 @@ html[data-theme="light"] #view-home-edit .ent-row.is-on { background: rgba(53, 2
 html[data-theme="light"] .pl-track:hover {
   background: rgba(20, 90, 125, 0.08);
 }
+
+/* ---------- 双击看原图 ---------- */
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, .9);
+  cursor: zoom-out;
+  animation: lbIn .18s ease both;
+}
+
+.lightbox[hidden] { display: none; }
+
+@keyframes lbIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.lightbox img {
+  max-width: 94vw;
+  max-height: 90vh;
+  width: auto;
+  height: auto;
+  cursor: default;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, .6);
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 20px;
+  right: 26px;
+  font-size: 12px;
+  letter-spacing: .16em;
+  color: rgba(255, 255, 255, .72);
+  cursor: pointer;
+}
+
+.lightbox-close:hover { color: #fff; }
+
+body.is-locked { overflow: hidden; }
+
+/* ---------- 首页把主区放宽，右侧预览卡片更大 ---------- */
+
+@media (min-width: 1200px) {
+  body[data-view="home"] main {
+    max-width: 1620px;
+  }
+
+  body[data-view="home"] .info {
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+}
+
+/* ---------- 评论区 ---------- */
+
+.cmt { margin-top: 52px; padding-top: 26px; border-top: 1px solid var(--line); }
+
+.cmt-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 16px; }
+
+.cmt-en { font-family: var(--font-en); font-size: 12.5px; letter-spacing: .22em; color: var(--title); }
+
+.cmt-count { font-family: var(--font-en); font-size: 11.5px; color: var(--dim); }
+
+.cmt-form { margin: 0 0 22px; }
+
+.cmt-input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 84px;
+  padding: 12px 14px;
+  font: inherit;
+  font-size: 13.5px;
+  line-height: 1.8;
+  color: var(--text);
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  resize: vertical;
+  outline: none;
+  transition: border-color .2s ease;
+}
+
+.cmt-input:focus { border-color: rgba(53, 216, 255, .5); }
+
+.cmt-act { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+
+.cmt-msg { flex: 1; font-size: 12px; color: #ff8b7a; }
+
+.cmt-send {
+  padding: 8px 20px;
+  font: inherit;
+  font-size: 12.5px;
+  letter-spacing: .06em;
+  color: #04131a;
+  background: var(--cyan);
+  border: 0;
+  cursor: pointer;
+  transition: opacity .2s ease;
+}
+
+.cmt-send:hover { opacity: .86; }
+
+.cmt-send:disabled { opacity: .5; cursor: default; }
+
+.cmt-list { margin: 0; padding: 0; list-style: none; }
+
+.cmt-item { padding: 16px 0; border-top: 1px solid var(--line); }
+
+.cmt-meta { display: flex; align-items: baseline; gap: 12px; margin-bottom: 8px; }
+
+.cmt-who { font-size: 12.5px; color: var(--title); }
+
+.cmt-meta time { font-family: var(--font-en); font-size: 11px; letter-spacing: .1em; color: var(--dimmer); }
+
+.cmt-item p { margin: 0; font-size: 13.5px; line-height: 1.9; color: var(--dim); white-space: pre-wrap; word-break: break-word; }
+
+.cmt-empty { padding: 16px 0; font-size: 12.5px; color: var(--dimmer); }
+
+html[data-theme="light"] .cmt-input { background: #fff; }
+
+.cmt-del {
+  margin-left: auto;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  font: inherit;
+  font-size: 15px;
+  line-height: 1;
+  color: var(--dimmer);
+  background: none;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: color .15s ease, border-color .15s ease;
+}
+
+.cmt-del:hover { color: #ff8b7a; border-color: rgba(255, 139, 122, .5); }
+
+.cmt-del:disabled { opacity: .4; cursor: default; }

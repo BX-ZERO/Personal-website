@@ -317,6 +317,46 @@
           return data;
         });
       });
+    },
+
+    comments: function (post) {
+      return fetch(WORKER + "/comments?post=" + encodeURIComponent(post))
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (!data || !data.ok) throw new Error((data && data.error) || "取评论失败");
+          return data.items || [];
+        });
+    },
+
+    comment: function (post, text) {
+      var ticket = get(TICKET_KEY);
+      var headers = { "content-type": "application/json" };
+      if (ticket) headers.authorization = "Bearer " + ticket;
+      return fetch(WORKER + "/comment", {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify({ post: post, text: text, vid: visitorId() })
+      }).then(function (r) {
+        return r.json().then(function (data) {
+          if (!r.ok || !data.ok) throw new Error(data.error || ("HTTP " + r.status));
+          return data;
+        });
+      });
+    },
+
+    deleteComment: function (post, time) {
+      var ticket = get(TICKET_KEY);
+      if (!ticket) return Promise.reject(new Error("没有登录"));
+      return fetch(WORKER + "/comment-del", {
+        method: "POST",
+        headers: { "content-type": "application/json", authorization: "Bearer " + ticket },
+        body: JSON.stringify({ post: post, time: time })
+      }).then(function (r) {
+        return r.json().then(function (data) {
+          if (!r.ok || !data.ok) throw new Error(data.error || ("HTTP " + r.status));
+          return data;
+        });
+      });
     }
   };
 
