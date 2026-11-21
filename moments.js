@@ -7,6 +7,11 @@
 
 window.BX_MOMENTS = [
   {
+    "date": "2026-11-21",
+    "title": "「雪山降临1101」复刻",
+    "body": "<img src=\"media/1795270367292-apari.png\" alt=\"FF37027760883D028384890F26EF9C50.png\">&nbsp;这一个活动接着一个啊"
+  },
+  {
     "date": "2026-11-16",
     "title": "我是抽卡之神吗",
     "body": "<img src=\"media/1794798928204-3fof1.png\" alt=\"395E3BC837BAA37632B12A1CC720A2D0.png\">&nbsp;4缺4本来想拼一把抽一个就收手的，结果第一发10连直接出完了😇"
