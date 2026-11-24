@@ -9,21 +9,21 @@ window.BX_MOMENTS = [
   {
     "date": "2026-11-21",
     "title": "「雪山降临1101」复刻",
-    "body": "<img src=\"media/1795270367292-apari.png\" alt=\"FF37027760883D028384890F26EF9C50.png\">&nbsp;这一个活动接着一个啊"
+    "body": "<img src=\"media/1795270367292-apari.webp\" alt=\"FF37027760883D028384890F26EF9C50.png\">&nbsp;这一个活动接着一个啊"
   },
   {
     "date": "2026-11-16",
     "title": "我是抽卡之神吗",
-    "body": "<img src=\"media/1794798928204-3fof1.png\" alt=\"395E3BC837BAA37632B12A1CC720A2D0.png\">&nbsp;4缺4本来想拼一把抽一个就收手的，结果第一发10连直接出完了😇"
+    "body": "<img src=\"media/1794798928204-3fof1.webp\" alt=\"395E3BC837BAA37632B12A1CC720A2D0.png\">&nbsp;4缺4本来想拼一把抽一个就收手的，结果第一发10连直接出完了😇"
   },
   {
     "date": "2026-11-11",
     "title": "桃胶木薯炖奶",
-    "body": "开半天车来吃全南宁唯一一家有桃胶木薯炖奶的蜜雪，难吃的要死，早知道不来了<img src=\"media/1794767301138-qqr8h.jpg\" alt=\"1.jpg\">&nbsp;<img src=\"media/1794767304888-kgl6j.jpg\" alt=\"2.jpg\">&nbsp;"
+    "body": "开半天车来吃全南宁唯一一家有桃胶木薯炖奶的蜜雪，难吃的要死，早知道不来了<img src=\"media/1794767301138-qqr8h.webp\" alt=\"1.jpg\">&nbsp;<img src=\"media/1794767304888-kgl6j.webp\" alt=\"2.jpg\">&nbsp;"
   },
   {
     "date": "2026-11-15",
     "title": "BLG牛逼，我们是冠军！",
-    "body": "<h3>“命运反复出题，直到你给出新的答案”</h3><img src=\"media/1794758118636-d2b6y.jpg\" alt=\"夺冠.jpg\"><img src=\"media/1794758134723-ffpg9.jpg\" alt=\"fmvp.jpg\"><img src=\"media/1794758154947-pw1gh.jpg\" alt=\"拥抱.jpg\"><img src=\"media/1794758158112-tfhs1.jpg\" alt=\"碰杯.jpg\">&nbsp;&nbsp;<h3><br></h3>"
+    "body": "<h3>“命运反复出题，直到你给出新的答案”</h3><img src=\"media/1794758118636-d2b6y.webp\" alt=\"夺冠.jpg\"><img src=\"media/1794758134723-ffpg9.webp\" alt=\"fmvp.jpg\"><img src=\"media/1794758154947-pw1gh.webp\" alt=\"拥抱.jpg\"><img src=\"media/1794758158112-tfhs1.webp\" alt=\"碰杯.jpg\">&nbsp;&nbsp;<h3><br></h3>"
   }
 ];

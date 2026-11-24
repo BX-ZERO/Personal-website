@@ -269,12 +269,13 @@
     /* 访问统计：站主自己带着票打开页面时不计数 */
     hit: function () {
       if (get(TICKET_KEY)) return Promise.resolve({ ok: false, skipped: "owner" });
-      /* 同一个标签页里翻来翻去只算一次，刷新也不重复计 */
+      /* 同一个浏览器一天只算一次，关掉重开也不再重复 */
+      var dayKey = "bxz-hit-" + new Date(Date.now() + 8 * 3600 * 1000).toISOString().slice(0, 10);
       try {
-        if (sessionStorage.getItem("bxz-hit") === "1") {
-          return Promise.resolve({ ok: false, skipped: "session" });
+        if (localStorage.getItem(dayKey) === "1") {
+          return Promise.resolve({ ok: false, skipped: "today" });
         }
-        sessionStorage.setItem("bxz-hit", "1");
+        localStorage.setItem(dayKey, "1");
       } catch (e) { /* 存不了就照常报一次 */ }
       try {
         return fetch(WORKER + "/hit", {
