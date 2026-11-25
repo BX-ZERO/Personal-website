@@ -7,6 +7,11 @@
 
 window.BX_MOMENTS = [
   {
+    "date": "2026-11-25",
+    "title": "Euphoria",
+    "body": "<div>手感好，开把12神器，对着攻略5小时终于过完真结局</div><div>经典屎尿屁齐上，血腥暴力，性，SM，定义为R18+,最后搞了个科幻纯爱故事真没想到</div><img src=\"media/1795586156386-9mwpb.jpg\" alt=\"1.jpg\"><img src=\"media/1795586159732-4a245.jpg\" alt=\"2.jpg\"><img src=\"media/1795586216580-46do0.png\" alt=\"3.png\"><img src=\"media/1795586166178-3ek99.jpg\" alt=\"4.jpg\"><img src=\"media/1795586168269-gdzho.png\" alt=\"5.png\"><img src=\"media/1795586171797-w253n.jpg\" alt=\"6.jpg\"><img src=\"media/1795586173929-9vuo6.jpg\" alt=\"7.jpg\"><img src=\"media/1795586176341-c50ku.png\" alt=\"8.png\"><img src=\"media/1795586180079-6125j.jpg\" alt=\"9.jpg\">&nbsp;"
+  },
+  {
     "date": "2026-11-21",
     "title": "「雪山降临1101」复刻",
     "body": "<img src=\"media/1795270367292-apari.webp\" alt=\"FF37027760883D028384890F26EF9C50.png\">&nbsp;这一个活动接着一个啊"
