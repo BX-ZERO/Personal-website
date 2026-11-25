@@ -233,7 +233,7 @@
   function bodyToHtml(text) {
     var s = String(text || "");
     if (!s.trim()) return "";
-    if (/<\/?(p|div|h[1-6]|ul|ol|li|blockquote|pre|img|br|strong|em|span|a|table|hr|figure)\b/i.test(s)) return s;
+    if (/<\/?(p|div|h[1-6]|ul|ol|li|blockquote|pre|img|br|strong|em|span|a|table|thead|tbody|tr|td|th|hr|figure|details|summary|sup|sub|code)\b/i.test(s)) return s;
     return renderBody(s);
   }
 

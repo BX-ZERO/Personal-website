@@ -39,7 +39,7 @@
   document.documentElement.dataset.theme = t;
 })();
 </script>
-<link rel="stylesheet" href="styles.css?v=20261121j">
+<link rel="stylesheet" href="styles.css?v=20261125c">
 </head>
 <body>
 
@@ -291,6 +291,9 @@
             <option value="28px">28</option>
           </select>
           <span class="rt-sep"></span>
+          <button type="button" id="rt-undo" title="撤销">↶</button>
+          <button type="button" id="rt-redo" title="重做">↷</button>
+          <span class="rt-sep"></span>
           <button type="button" data-cmd="bold" title="加粗"><b>B</b></button>
           <button type="button" data-cmd="italic" title="倾斜"><i>I</i></button>
           <button type="button" data-cmd="underline" title="下划线"><u>U</u></button>
@@ -306,13 +309,21 @@
           <button type="button" id="rt-link" title="插入链接">链接</button>
           <button type="button" id="rt-img" title="插入图片">图片</button>
           <button type="button" id="rt-hr" title="分隔线">分隔</button>
+          <button type="button" id="rt-table" title="插入表格">表格</button>
+          <button type="button" id="rt-fold" title="插入折叠块">折叠</button>
+          <button type="button" id="rt-now" title="插入当前日期时间">时间</button>
+          <button type="button" id="rt-sub" title="下标">x₂</button>
+          <button type="button" id="rt-sup" title="上标">x²</button>
           <button type="button" id="rt-clear" title="清除格式">清</button>
+          <button type="button" id="rt-source" title="看或改 HTML 源码">&lt;/&gt;</button>
+          <button type="button" id="rt-height" title="切换编辑区高度">高</button>
           <span class="rt-sep"></span>
           <button type="button" id="rt-draft" title="把当前内容存在本机">存草稿</button>
           <span class="rt-sep"></span>
-          <input class="rt-file" id="rt-file-name" type="text" readonly placeholder="还没有插图" title="最近插入的图片">
+          <input class="rt-file" id="rt-file-name" type="text" readonly placeholder="图片上传进度会显示在这" title="图片上传进度">
         </div>
         <div class="rt-body" id="f-body" contenteditable="true"></div>
+        <div class="rt-count" id="rt-count">正文 0 字 · 0 张图</div>
         <div class="atts" id="atts"></div>
       </div>
       <input type="file" id="img-file" accept="image/*" multiple hidden>
@@ -333,6 +344,14 @@
           <span class="float-close" id="float-close">关闭</span>
         </div>
         <div class="float-scroll"><div id="float-body"></div></div>
+      </div>
+    </div>
+    <!-- HTML 源码模式 -->
+    <div class="srcpane" id="srcpane" hidden>
+      <div class="srcpane-sheet">
+        <div class="srcpane-head"><span>HTML 源码</span><span class="srcpane-close" id="srcpane-close">关闭</span></div>
+        <textarea class="srcpane-text" id="srcpane-text" spellcheck="false"></textarea>
+        <div class="srcpane-foot"><button class="btn primary" id="srcpane-ok" type="button">按这份源码更新正文</button></div>
       </div>
     </div>
   </section>
@@ -457,7 +476,7 @@
 <footer class="foot">
   <p>BXZERO · <span id="year">2026</span></p>
   <img class="badge" src="img/dsh-badge.png" width="121" height="20" alt="powered by dsh">
-  <span class="ver">v1.1.2</span>
+  <span class="ver">v1.1.3</span>
 </footer>
 
   <!-- 数据文件按分钟取版本，写作台保存后不必等 CDN 缓存过期 -->
@@ -468,8 +487,8 @@
       document.write('<script src="moments.js?t=' + v + '"><\/script>');
     })();
   </script>
-<script src="auth.js?v=20261124a"></script>
-<script src="main.js?v=20261121j"></script>
+<script src="auth.js?v=20261125c"></script>
+<script src="main.js?v=20261125c"></script>
 <script>
 (function () {
   "use strict";
@@ -1225,7 +1244,7 @@
   function bodyToHtml(text) {
     var s = String(text || "");
     if (!s.trim()) return "";
-    if (/s\/?(p|div|h[1-6]|ul|ol|li|blockquote|pre|img|br|strong|em|span|a|table|hr)\b/i.test(s)) return s;
+    if (/<\/?(p|div|h[1-6]|ul|ol|li|blockquote|pre|img|br|strong|em|span|a|table|thead|tbody|tr|td|th|hr|figure|details|summary|sup|sub|code)\b/i.test(s)) return s;
     return renderBody(s);
   }
 
@@ -1243,67 +1262,69 @@
     img.src = RAW_BASE + src;
   }, true);
 
-  /* 编辑区显示标签，保存与预览时才还原成 img */
+  /* 正文里每张图都是一个可以搬动的标签，附件区只是它们的索引 */
   var attachments = [];
   var attsBox = document.getElementById("atts");
-  var attRaw = {};
 
   function rawOf(src) {
     if (/^https?:/i.test(src)) return src;
     return RAW_BASE + src;
   }
 
+  function chipList() {
+    return Array.prototype.slice.call(els.body.querySelectorAll(".img-chip"));
+  }
+
   function renderAtts() {
     if (!attsBox) return;
+    attachments = chipList().map(function (c) {
+      return {
+        src: c.getAttribute("data-src") || "",
+        name: c.getAttribute("data-file") || c.getAttribute("data-name") || "",
+        chip: c
+      };
+    });
     if (!attachments.length) {
-      attsBox.innerHTML = "";
+      attsBox.innerHTML = '<p class="att-empty">正文里还没有图片。上传的图会自动排到正文末尾，用 ↑ ↓ 调整先后。</p>';
       return;
     }
     attsBox.innerHTML = attachments.map(function (a, i) {
+      var label = (i + 1) + ". " + (a.name || "图片");
       return '<div class="att" data-i="' + i + '">' +
         '<img class="att-thumb" src="' + rawOf(a.src) + '" alt="">' +
         '<div class="att-foot">' +
-        '<span class="att-name" title="' + (a.name || "") + '">' + (i + 1) + ". " + (a.name || "") + "</span>" +
-        '<button class="att-btn" type="button" data-att="ins" title="插到光标处">插</button>' +
-        '<button class="att-btn" type="button" data-att="up" title="上移">↑</button>' +
-        '<button class="att-btn" type="button" data-att="down" title="下移">↓</button>' +
-        '<button class="att-btn del" type="button" data-att="del" title="删除">×</button>' +
+        '<span class="att-name" title="' + label + '">' + label + "</span>" +
+        '<button class="att-btn" type="button" data-att="up" title="往前挪">↑</button>' +
+        '<button class="att-btn" type="button" data-att="down" title="往后挪">↓</button>' +
+        '<button class="att-btn del" type="button" data-att="del" title="从正文删掉">×</button>' +
         "</div></div>";
     }).join("");
   }
 
-  function toChip(src, name) {
+  function toChip(src, label, file) {
     var chip = document.createElement("span");
     chip.className = "img-chip";
     chip.setAttribute("contenteditable", "false");
     chip.setAttribute("data-src", src || "");
-    chip.setAttribute("data-name", name || "");
-    chip.textContent = "图片 " + (name || "");
+    chip.setAttribute("data-name", label || "图片");
+    chip.setAttribute("data-file", file || label || "");
+    var cap = document.createElement("span");
+    cap.className = "chip-name";
+    cap.textContent = label || "图片";
+    chip.appendChild(cap);
     return chip;
   }
 
-  /* 只把「正文末尾连续的图片」收成附件，中间的图留作可拖动的标签 */
+  /* 正文里所有图片都转成标签，附件区照它们的位置列出来 */
   function splitImages(html) {
     var holder = document.createElement("div");
     holder.innerHTML = html;
-    var picked = [];
-    while (holder.lastElementChild) {
-      var last = holder.lastElementChild;
-      var found = last.tagName === "IMG"
-        ? [last]
-        : (last.textContent.trim() ? [] : Array.prototype.slice.call(last.querySelectorAll("img")));
-      if (!found.length) break;
-      found.reverse().forEach(function (img) {
-        var src = img.getAttribute("src") || "";
-        picked.unshift({ src: src, name: img.getAttribute("alt") || src.split("/").pop() });
-      });
-      last.remove();
-    }
-    Array.prototype.slice.call(holder.querySelectorAll("img")).forEach(function (img) {
+    Array.prototype.slice.call(holder.querySelectorAll("img")).forEach(function (img, i) {
       var src = img.getAttribute("src") || "";
-      img.replaceWith(toChip(src, img.getAttribute("alt") || src.split("/").pop()));
+      var file = img.getAttribute("alt") || src.split("/").pop();
+      img.replaceWith(toChip(src, "图片" + (i + 1), file));
     });
-    return { html: holder.innerHTML, images: picked };
+    return holder.innerHTML;
   }
 
   function readBodyHtml() {
@@ -1314,73 +1335,77 @@
       img.setAttribute("alt", chip.getAttribute("data-name") || "");
       chip.replaceWith(img);
     });
-    var imgs = attachments.map(function (a) {
-      return '<img src="' + a.src + '" alt="' + (a.name || "").replace(/"/g, "") + '">';
-    }).join("");
-    return clone.innerHTML + imgs;
+    return clone.innerHTML;
   }
 
-  /* 把某张附件插到光标处，之后它就算正文的一部分 */
-  function insertAttachment(i) {
-    var a = attachments[i];
-    if (!a) return;
-    els.body.focus();
-    restoreRange();
-    var holder = document.createElement("span");
-    holder.appendChild(toChip(a.src, a.name));
-    document.execCommand("insertHTML", false, holder.innerHTML + "&nbsp;");
-    rememberRange();
-    attachments.splice(i, 1);
-    renderAtts();
-    renderPreview();
-    writeDraft(true);
-    setStatus("图片放到光标处了", "ok");
+  /* 把第 i 张图往前或往后挪一格，直接改正文里的真实位置 */
+  function moveChip(i, dir) {
+    var chips = chipList();
+    var from = chips[i];
+    var to = chips[i + dir];
+    if (!from || !to) return false;
+    if (dir < 0) {
+      to.parentNode.insertBefore(from, to);
+    } else {
+      to.parentNode.insertBefore(from, to.nextSibling);
+    }
+    return true;
   }
 
   if (attsBox) {
+    attsBox.addEventListener("load", function (e) {
+      var im = e.target;
+      if (!im || !im.classList || !im.classList.contains("att-thumb")) return;
+      var host = im.closest(".att");
+      if (!host) return;
+      var name = host.querySelector(".att-name");
+      if (!name || name.dataset.sized) return;
+      if (!im.naturalWidth) return;
+      name.dataset.sized = "1";
+      name.textContent = name.textContent + " · " + im.naturalWidth + "×" + im.naturalHeight;
+    }, true);
+
     attsBox.addEventListener("click", function (e) {
       var btn = e.target.closest("[data-att]");
       if (!btn) return;
       var host = e.target.closest(".att");
+      if (!host) return;
       var i = parseInt(host.dataset.i, 10);
-      if (isNaN(i) || !attachments[i]) return;
+      if (isNaN(i)) return;
       var action = btn.dataset.att;
-      if (action === "ins") {
-        insertAttachment(i);
-        return;
-      }
       if (action === "del") {
-        attachments.splice(i, 1);
-      } else if (action === "up" && i > 0) {
-        var tmp = attachments[i - 1];
-        attachments[i - 1] = attachments[i];
-        attachments[i] = tmp;
-      } else if (action === "down" && i < attachments.length - 1) {
-        var tmp2 = attachments[i + 1];
-        attachments[i + 1] = attachments[i];
-        attachments[i] = tmp2;
+        var chips = chipList();
+        if (!chips[i]) return;
+        chips[i].remove();
+        setStatus("删掉了第 " + (i + 1) + " 张图", "ok");
+      } else if (action === "up") {
+        if (!moveChip(i, -1)) return;
+      } else if (action === "down") {
+        if (!moveChip(i, 1)) return;
       }
       renderAtts();
       renderPreview();
+      writeDraft(true);
     });
   }
 
-  function markImages(html) {
-    var n = 0;
-    return String(html || "").replace(/<img\b[^>]*>/gi, function () {
-      n += 1;
-      return '<span class="img-mark">图片' + n + "</span>";
-    });
-  }
 
   function renderPreview() {
     var t = els.title.value.trim();
     var html = bodyToHtml(readBodyHtml());
     var inner = "<h1>" + inline(t || "（无标题）") + "</h1>" +
       (html || '<p style="color:var(--dimmer)">正文还是空的。</p>');
-    els.preview.innerHTML = '<div class="article">' + markImages(inner) + "</div>";
+    els.preview.innerHTML = '<div class="article">' + inner + "</div>";
     var fb = document.getElementById("float-body");
     if (fb) fb.innerHTML = '<div class="article">' + inner + "</div>";
+    updateCount();
+  }
+
+  function updateCount() {
+    var box = document.getElementById("rt-count");
+    if (!box) return;
+    var text = String(els.body.innerText || "").replace(/\s+/g, "");
+    box.textContent = "正文 " + text.length + " 字 · " + chipList().length + " 张图";
   }
 
   /* ---------- 表单 ---------- */
@@ -1388,9 +1413,7 @@
   function fillForm(item) {
     els.date.value = item ? (item.date || "") : new Date().toISOString().slice(0, 10);
     els.title.value = item ? (item.title || "") : "";
-    var split = item ? splitImages(bodyToHtml(item.body)) : { html: "", images: [] };
-    els.body.innerHTML = split.html;
-    attachments = split.images;
+    els.body.innerHTML = item ? splitImages(bodyToHtml(item.body)) : "";
     renderAtts();
     renderPreview();
   }
@@ -1684,6 +1707,90 @@
       clearBtn.addEventListener("click", function () { exec("removeFormat"); });
     }
 
+    /* ---------- 撤销重做、表格、折叠、时间、上下标、源码、高度 ---------- */
+
+    function insertHtml(html) {
+      els.body.focus();
+      restoreRange();
+      document.execCommand("insertHTML", false, html);
+      rememberRange();
+      renderAtts();
+      renderPreview();
+      writeDraft(true);
+    }
+
+    function bindBtn(id, fn) {
+      var b = document.getElementById(id);
+      if (b) b.addEventListener("click", fn);
+    }
+
+    bindBtn("rt-undo", function () {
+      els.body.focus();
+      document.execCommand("undo");
+      rememberRange();
+      renderAtts();
+      renderPreview();
+      writeDraft(true);
+    });
+
+    bindBtn("rt-redo", function () {
+      els.body.focus();
+      document.execCommand("redo");
+      rememberRange();
+      renderAtts();
+      renderPreview();
+      writeDraft(true);
+    });
+    bindBtn("rt-sub", function () { exec("subscript"); });
+    bindBtn("rt-sup", function () { exec("superscript"); });
+
+    bindBtn("rt-table", function () {
+      var cell = "<td>&nbsp;</td>";
+      var row = "<tr>" + cell + cell + cell + "</tr>";
+      insertHtml("<table><tbody>" + row + row + row + "</tbody></table><p><br></p>");
+    });
+
+    bindBtn("rt-fold", function () {
+      insertHtml("<details><summary>点开看</summary><p>折叠起来的内容。</p></details><p><br></p>");
+    });
+
+    bindBtn("rt-now", function () {
+      var d = new Date();
+      var p2 = function (n) { return n < 10 ? "0" + n : "" + n; };
+      insertHtml(d.getFullYear() + "-" + p2(d.getMonth() + 1) + "-" + p2(d.getDate()) +
+        " " + p2(d.getHours()) + ":" + p2(d.getMinutes()));
+    });
+
+    bindBtn("rt-height", function () {
+      els.body.classList.toggle("is-tall");
+      setStatus(els.body.classList.contains("is-tall") ? "编辑区换成大窗。" : "编辑区换回小窗。", "ok");
+    });
+
+    /* 源码模式 */
+    var srcPane = document.getElementById("srcpane");
+    var srcText = document.getElementById("srcpane-text");
+
+    function closeSource() { if (srcPane) srcPane.hidden = true; }
+
+    bindBtn("rt-source", function () {
+      if (!srcPane || !srcText) return;
+      srcText.value = readBodyHtml();
+      srcPane.hidden = false;
+      srcText.focus();
+    });
+
+    bindBtn("srcpane-close", closeSource);
+
+    bindBtn("srcpane-ok", function () {
+      if (!srcText) return;
+      els.body.innerHTML = splitImages(srcText.value);
+      closeSource();
+      renderAtts();
+      renderPreview();
+      writeDraft(true);
+      setStatus("正文已按源码更新。", "ok");
+    });
+
     /* ---------- 插入图片：压缩后传到仓库 media/ ---------- */
 
     var imgBtn = document.getElementById("rt-img");
@@ -1703,16 +1810,8 @@
       imgFile.addEventListener("change", function () {
         var files = Array.prototype.slice.call(imgFile.files || []);
         if (!files.length) return;
-        setStatus("正在处理 " + files.length + " 张图片…");
-        files.reduce(function (chain, file) {
-          return chain.then(function () { return sendImage(file); });
-        }, Promise.resolve()).then(function () {
-          imgFile.value = "";
-          renderPreview();
-          setStatus("图片已插入。", "ok");
-        }).catch(function (err) {
-          setStatus("图片上传失败：" + (err && err.message ? err.message : err), "err");
-        });
+        handleFiles(files);
+        imgFile.value = "";
       });
     }
 
@@ -1753,17 +1852,95 @@
         var name = "media/" + Date.now() + "-" + Math.random().toString(36).slice(2, 7) + "." + ext;
         return window.BXAuth.upload(name, base64).then(function (res) {
           var path = (res && res.path) || name;
-          attachments.push({ src: path, name: label });
+          var para = document.createElement("p");
+          para.appendChild(toChip(path, "图片" + (chipList().length + 1), label));
+          els.body.appendChild(para);
           renderAtts();
           renderPreview();
-          noteFile(label + " 已加进附件", "is-done");
+          writeDraft(true);
+          noteFile(label + " 已放进正文末尾", "is-done");
         });
       }).catch(function (err) {
         noteFile(label + " 上传失败", "is-err");
         throw err;
       });
     }
+    function handleFiles(files) {
+      if (!files || !files.length) return;
+      var ok = files.filter(function (f) { return f && /^image\//.test(f.type || ""); });
+      if (!ok.length) {
+        setStatus("只认识图片，别的格式传不了。", "err");
+        return;
+      }
+      setStatus("正在处理 " + ok.length + " 张图片…");
+      ok.reduce(function (chain, file) {
+        return chain.then(function () { return sendImage(file); });
+      }, Promise.resolve()).then(function () {
+        renderAtts();
+        renderPreview();
+        setStatus("图片已插入。", "ok");
+      }).catch(function (err) {
+        setStatus("图片上传失败：" + (err && err.message ? err.message : err), "err");
+      });
+    }
+
+    /* 拖图片进来、直接粘贴图片，都能上传 */
+    els.body.addEventListener("dragover", function (e) {
+      var dt = e.dataTransfer;
+      if (!dt) return;
+      var hasFile = Array.prototype.some.call(dt.types || [], function (t) { return t === "Files"; });
+      if (!hasFile) return;
+      e.preventDefault();
+      els.body.classList.add("is-drop");
+    });
+
+    els.body.addEventListener("dragleave", function () {
+      els.body.classList.remove("is-drop");
+    });
+
+    els.body.addEventListener("drop", function (e) {
+      var dt = e.dataTransfer;
+      els.body.classList.remove("is-drop");
+      if (!dt || !dt.files || !dt.files.length) return;
+      e.preventDefault();
+      handleFiles(Array.prototype.slice.call(dt.files));
+    });
+
+    els.body.addEventListener("paste", function (e) {
+      var cd = e.clipboardData;
+      if (!cd) return;
+      var files = [];
+      var items = cd.items || [];
+      for (var i = 0; i < items.length; i++) {
+        if (items[i].kind === "file" && /^image\//.test(items[i].type || "")) {
+          var f = items[i].getAsFile();
+          if (f) files.push(f);
+        }
+      }
+      if (!files.length) {
+        if (cd.files && cd.files.length) files = Array.prototype.slice.call(cd.files);
+      }
+      if (!files.length) return;
+      e.preventDefault();
+      handleFiles(files);
+    });
+
+    /* 快捷键：Ctrl+Enter 保存，Alt+3 选图片 */
+    document.addEventListener("keydown", function (e) {
+      if ((e.ctrlKey || e.metaKey) && (e.key === "Enter" || e.keyCode === 13)) {
+        var saveBtn = document.getElementById("btn-save");
+        if (saveBtn) {
+          e.preventDefault();
+          saveBtn.click();
+        }
+      }
+      if (e.altKey && (e.key === "3" || e.code === "Digit3")) {
+        e.preventDefault();
+        if (imgFile) imgFile.click();
+      }
+    });
   }
+
 
   /* ---------- 悬停浮出整页预览 ---------- */
 
@@ -1824,7 +2001,6 @@
           date: els.date.value,
           title: els.title.value,
           body: els.body.innerHTML,
-          atts: attachments,
           at: Date.now()
         }));
         if (!quiet) setStatus("草稿已存在本机", "ok");
@@ -1850,11 +2026,10 @@
   function restoreDraft() {
     var d = readDraft();
     if (!d) return false;
-    if (!d.title && !d.body && !(d.atts && d.atts.length)) return false;
+    if (!d.title && !d.body) return false;
     els.date.value = d.date || els.date.value;
     els.title.value = d.title || "";
     els.body.innerHTML = d.body || "";
-    attachments = Array.isArray(d.atts) ? d.atts : [];
     renderAtts();
     renderPreview();
     setStatus("已恢复上次没保存的草稿", "ok");
